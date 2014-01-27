@@ -41,6 +41,6 @@ int Route::getAction(){
 }
 
 Route::~Route() {
-	// TODO Auto-generated destructor stub
+	delete mIpDest, mNextHop, mInterface;
 }
 
