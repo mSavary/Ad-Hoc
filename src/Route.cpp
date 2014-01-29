@@ -39,6 +39,13 @@ IPv6 Route::getInterface(){
 int Route::getAction(){
 	return mAction;
 }
+void Route::setRoute(Route *route){
+	mIpDest->setIPv6(route->getIpDest());
+	mNextHop->setIPv6(route->getNextHop());
+	mMetric = route->getMetric();
+	mInterface->setIPv6(route->getInterface());
+	mAction = route->getAction();
+}
 
 Route::~Route() {
 	delete mIpDest, mNextHop, mInterface;

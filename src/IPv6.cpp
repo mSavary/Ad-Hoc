@@ -28,6 +28,22 @@ int IPv6::getScope(int scope){
 	return mScope[scope];
 }
 
+void IPv6::setIPv6(IPv6 ip){
+	for (int i=0; i<8; i++){
+		mScope[i]=ip.getScope(i);
+	}
+}
+
+std::string IPv6::toChar(){
+	std::stringstream ip;
+	for (int i=0;i<8;i++){
+		ip<<std::hex<<mScope[i];
+		if(i<7)
+			ip<<":";
+	}
+	return ip.str();
+}
+
 IPv6::~IPv6() {
 	// TODO Auto-generated destructor stub
 }

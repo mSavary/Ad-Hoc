@@ -7,7 +7,7 @@
 
 #ifndef IPV6_H_
 #define IPV6_H_
-
+#include <sstream>
 class IPv6
 {
 private:
@@ -24,6 +24,8 @@ public:
 			int scope7,
 			int scope8);
 	int getScope(int scope);
+	void setIPv6(IPv6 ip);
+	std::string toChar();
 	virtual ~IPv6();
 };
 

@@ -36,6 +36,7 @@ public:
 	int getMetric();
 	IPv6 getInterface();
 	int getAction();
+	void setRoute(Route *route);
 	virtual ~Route();
 };
 
