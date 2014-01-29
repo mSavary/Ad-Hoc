@@ -5,26 +5,23 @@
 *    this class also send Hello and Tc Messages at each times requires by the OLSR rfc
 */
 
-#ifndef NODE_H
-#define NODE_H
+//#ifndef NODE_H
+//#define NODE_H
 
 #define MAX_NEIGHBOR 30
 #define MAX_TWOHOPNEIGHBOR MAX_NEIGHBOR*MAX_NEIGHBOR
-#include <stdio.h>
 
+#include <iostream>
+#include "Route.h"
+#include "IPv6.h"
 class Node
 {
     private:
-	struct Route{
-	    int sIpDest,
-		 sIpSource,
-		 sMetric,
-		 sNextHop;
-	};
+
 	bool mMpr; // true if MPR
-	int mInterface;
-        int mTimerHello,
-             mTimerTc;
+	IPv6 *mInterface;
+    int mTimerHello,
+        mTimerTc;
 
 	/**
 	* Func sendHello()
@@ -38,12 +35,10 @@ class Node
 	*	(MUST be transmitted by every MPR neighbor)
 	*	(MUST be a MPR)
 	*/
-        void sendTc();
-        Route mNeigborTable[MAX_NEIGHBOR],
-	      mTwoHopNeighborTable[MAX_TWOHOPNEIGHBOR];
+    void sendTc();
 
-
-
+    Route *mNeighborTable[MAX_NEIGHBOR],
+	      *mTwoHopNeighborTable[MAX_TWOHOPNEIGHBOR];
 
     public:
 	/**
@@ -52,7 +47,7 @@ class Node
 	* @init Create your IP and starts all timer for messages sending
 	*       mMpr at false
 	*/
-        Node();
+    Node();
 	inline bool isMpr(){
 	    return mMpr;
 	}
@@ -61,11 +56,15 @@ class Node
 	    mMpr =true;
 	}
 
-        inline Route getNeighbor(){
-	    return mNeighborTable;
+	inline IPv6* getInterface(){
+		return mInterface;
 	}
-        inline Route getTwoHopNeighbor(){
-	    return mTwoHopNeighborTable;
+
+        inline Route* getNeighbor(int i){
+	    return mNeighborTable[i];
+	}
+        inline Route* getTwoHopNeighbor(int i){
+	    return mTwoHopNeighborTable[i];
 	}
 	/**
 	* Func addNeighbor 
@@ -76,7 +75,7 @@ class Node
 	* @ return 0 if success
 	*	   1 if !success
 	*/
-        int addNeighbor(Route route);
+        int addNeighbor(Route *route);
         int addNeighbor(int ipDest, int ipSource, int metric, int nextHop);
 	
 	/**
@@ -88,7 +87,7 @@ class Node
 	* @ return 0 if success
 	*	   1 if !success
 	*/
-	int addTwoHopNeighbor(Route route);
+	int addTwoHopNeighbor(Route *route);
 	int addTwoHopNeighbor(int ipDest, int ipSource, int metric, int nextHop);
 
 	/**
@@ -114,4 +113,4 @@ class Node
 	int delTwoHopNeighbor(int ipToDelete);
 };
 
-#endif // CLIENT_H
+//#endif // CLIENT_H

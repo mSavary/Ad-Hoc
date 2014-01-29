@@ -1,6 +1,19 @@
 #include "Node.h"
 
 Node::Node(){
+	mMpr=false;
+	mInterface = new IPv6(0xAA00, 0xAA00, 0xAA00, 0xAA00, 0xAA00, 0xAA00, 0xAA00, 0xAA00);
+
+	for (int i=0; i<MAX_NEIGHBOR; i++){
+		mNeighborTable[i]=new Route();
+	}
+
+	for (int i=0; i<MAX_TWOHOPNEIGHBOR; i++){
+		mTwoHopNeighborTable[i]=new Route();
+	}
+
+	mTimerHello= 2;
+	mTimerTc = 5;
 
 }
 
@@ -19,10 +32,27 @@ void Node::sendTc(){
 // redéclencher le timer
 }
 
-int Node::addNeighbor(Route route){
+int Node::addNeighbor(Route *route){
 // maté le tableau dès qu'on tombe sur un NULL on ajoute
 // erreur si Plein
 // erreur si metric !=1
+	if (route->getMetric()!=1)
+		return 2;
+
+	int i=0;
+	IPv6 ipNull();
+	//while(mNeighborTable[i].getIpDest()!=ipNull && i<MAX_NEIGHBOR){
+	//@TODO: SUCHARGER OPERATEUR != et == pour comp 2 IPv6
+		//i++;
+	/*	@TODO SURCHARGER OPERATEUR != et == pour 2  route
+	 * if (mNeighborTable[i] == route){
+			break;
+		}*/
+    //}
+	if (i==MAX_NEIGHBOR)
+		return 1;
+	else
+		mNeighborTable[i]->setRoute(route);
 return 0;
 }
 int Node::addNeighbor(int ipDest, int ipSource, int metric, int nextHop){
@@ -31,7 +61,7 @@ int Node::addNeighbor(int ipDest, int ipSource, int metric, int nextHop){
 return 0;
 }
 
-int Node::addTwoHopNeighbor(Route route){
+int Node::addTwoHopNeighbor(Route *route){
 // MAté le tableau TwoHOP Null on ajoute la route
 // erreur si plein
 // erruer si metric !=2
