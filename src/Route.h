@@ -13,6 +13,7 @@
 #define NONE 0
 #define ADD 1
 #define DEL 2
+#define UPD 3
 
 class Route
 {
@@ -31,11 +32,12 @@ public:
 			int metric,
 			IPv6 *interface,
 			int action);
-	IPv6 getIpDest();
-	IPv6 getNextHop();
+	IPv6* getIpDest();
+	IPv6* getNextHop();
 	int getMetric();
-	IPv6 getInterface();
+	IPv6* getInterface();
 	int getAction();
+	void setAction(int action);
 	void setRoute(Route *route);
 	virtual ~Route();
 };

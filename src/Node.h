@@ -12,6 +12,7 @@
 #define MAX_TWOHOPNEIGHBOR MAX_NEIGHBOR*MAX_NEIGHBOR
 
 #include <iostream>
+#include <list>
 #include "Route.h"
 #include "IPv6.h"
 class Node
@@ -23,6 +24,12 @@ class Node
     int mTimerHello,
         mTimerTc;
 
+    std::list<Route> mNeighborTable,
+					 mTwoHopNeighborTable;
+
+    std::list<IPv6> mNeighborIP,
+    				mMyMprList;
+    std::list<std::list<IPv6> >	mTwoHopNeighborIP;
 	/**
 	* Func sendHello()
 	* 	send a Hello to every one when mTimerHello is reach
@@ -37,8 +44,25 @@ class Node
 	*/
     void sendTc();
 
-    Route *mNeighborTable[MAX_NEIGHBOR],
-	      *mTwoHopNeighborTable[MAX_TWOHOPNEIGHBOR];
+    /**
+     * Private func to add a route to the Table route ( call by public function see below )
+     */
+	int addTwoHopNeighborTable(Route *route);
+    int addNeighborTable(Route *route);
+
+    /**
+     * Func selectMpr()
+     *
+     * 	Look at the TwoHopNeighborIP and choose the node's MPR by adding the MPR to the mMyMprList
+     */
+    void selectMpr();
+
+    /**
+     * Func recursivSelectMpr()
+     *
+     *   call by selectMPR and select all MPR for all 2HOP neighbor
+     */
+    void recursivSelectMpr(std::list<std::list<IPv6> > liste);
 
     public:
 	/**
@@ -52,19 +76,37 @@ class Node
 	    return mMpr;
 	}
 	
-	inline void beMpr(){
-	    mMpr =true;
+	inline std::list<IPv6> getMprList(){
+		return mMyMprList;
 	}
 
 	inline IPv6* getInterface(){
 		return mInterface;
 	}
 
-        inline Route* getNeighbor(int i){
-	    return mNeighborTable[i];
+	inline std::list<Route> getNeighborTable(){
+        	std::cout<<mNeighborTable.size()<<std::endl;
+	    return mNeighborTable;
 	}
-        inline Route* getTwoHopNeighbor(int i){
-	    return mTwoHopNeighborTable[i];
+	inline std::list<Route> getTwoHopNeighborTable(){
+	    return mTwoHopNeighborTable;
+	}
+
+	inline std::list<IPv6> getNeighborIP(){
+		return mNeighborIP;
+	}
+
+	inline std::list<std::list<IPv6> > getTwoHopNeighborIP(){
+		return mTwoHopNeighborIP;
+	}
+    /**
+     * Func imMpr()
+     *
+     *   set mMpr to true to say if the node is MPR for someone ( call this function when node interface is in a received HELLO: MPR section)
+     */
+
+	inline void imMpr(){
+		mMpr=true;
 	}
 	/**
 	* Func addNeighbor 
@@ -75,8 +117,8 @@ class Node
 	* @ return 0 if success
 	*	   1 if !success
 	*/
-        int addNeighbor(Route *route);
-        int addNeighbor(int ipDest, int ipSource, int metric, int nextHop);
+    int addNeighbor(Route* route);
+    int addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop,int action);
 	
 	/**
 	* Func addTwoHopNeighbor 
@@ -87,8 +129,8 @@ class Node
 	* @ return 0 if success
 	*	   1 if !success
 	*/
-	int addTwoHopNeighbor(Route *route);
-	int addTwoHopNeighbor(int ipDest, int ipSource, int metric, int nextHop);
+    int addTwoHopNeighbor(Route* route);
+	int addTwoHopNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop,int action);
 
 	/**
 	* Func delNeighbor 
@@ -99,7 +141,9 @@ class Node
 	* @ return 0 if success
 	*	   1 if !success
 	*/
-	int delNeighbor(int ipToDelete);
+
+	int delNeighbor(Route* route);
+	int delNeighbor(IPv6* ipToDelete);
 	
 	/**
 	* Func delTwoHopNeighbor 
@@ -110,7 +154,9 @@ class Node
 	* @ return 0 if success
 	*	   1 if !success
 	*/
-	int delTwoHopNeighbor(int ipToDelete);
+
+	int delTwoHopNeighbor(Route* route);
+	int delTwoHopNeighbor(IPv6* ipToDelete);
 };
 
 //#endif // CLIENT_H

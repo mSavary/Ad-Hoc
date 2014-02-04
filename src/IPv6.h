@@ -8,6 +8,9 @@
 #ifndef IPV6_H_
 #define IPV6_H_
 #include <sstream>
+#include <list>
+#define EN_TETE_IPv6 0x2011
+
 class IPv6
 {
 private:
@@ -15,17 +18,14 @@ private:
 
 public:
 	IPv6();
-	IPv6(int scope1,
-			int scope2,
-			int scope3,
-			int scope4,
-			int scope5,
+	IPv6(int scope5,
 			int scope6,
 			int scope7,
 			int scope8);
 	int getScope(int scope);
-	void setIPv6(IPv6 ip);
+	void setIPv6(IPv6* ip);
 	std::string toChar();
+	bool isEgal(IPv6* ip);
 	virtual ~IPv6();
 };
 

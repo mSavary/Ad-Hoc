@@ -20,25 +20,30 @@ Route::Route(IPv6 *ipDest,
 	mAction = action;
 }
 
-IPv6 Route::getIpDest(){
-	return *mIpDest;
+IPv6* Route::getIpDest(){
+	return mIpDest;
 }
 
-IPv6 Route::getNextHop(){
-	return *mNextHop;
+IPv6* Route::getNextHop(){
+	return mNextHop;
 }
 
 int Route::getMetric(){
 	return mMetric;
 }
 
-IPv6 Route::getInterface(){
-	return *mInterface;
+IPv6* Route::getInterface(){
+	return mInterface;
 }
 
 int Route::getAction(){
 	return mAction;
 }
+
+void Route::setAction(int action){
+	mAction=action;
+}
+
 void Route::setRoute(Route *route){
 	mIpDest->setIPv6(route->getIpDest());
 	mNextHop->setIPv6(route->getNextHop());
