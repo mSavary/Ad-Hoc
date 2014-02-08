@@ -10,158 +10,137 @@ Node::Node() {
 }
 
 Node::~Node() {
-	// TODO Auto-generated destructor stub
 	mTimerHello.join();
 	mTimerTc.join();
 }
 
 void Node::sendHello() {
-// appelé par le timer
-// construire le Hello ( voir si on le fait dans le constructeur vu qu'il change pas ? )
-// envoi du Hello
-// redéclencher le timer
 
-	while (1) {
-		sleep(HELLO_INTERVAL);
-		std::cout << "\n***** ENVOI HELLO *****\n";
+	sleep(HELLO_INTERVAL);
+	mMutexIP.lock();
+	std::cout << "\n***** ENVOI HELLO *****";
+	std::cout << "\n NEIGHBOR LISTE \n****************" << std::endl;
+	for (std::list<IPv6>::iterator ipv = mNeighborIP.begin();
+			ipv != mNeighborIP.end(); ipv++) {
+		std::cout << "" << ipv->toChar() << "" << std::endl;
 	}
+	std::cout << "******************\n";
+	mMutexIP.unlock();
+	sendHello();
 	/* appeler fonctions de construction et d'envoi de message Hello */
 }
 
 void Node::sendTc() {
-// appelé par le timer
-// construire le TC ( peut etre != a chaque envoi )
-// regarder si on est MPR
-// 	alors envoi du TC
-// redéclencher le timer
 
-	while (1) {
-		sleep(10);
-		std::cout << "\n***** ENVOI TC *****\n";
+	sleep(TC_INTERVAL);
+	mMutexIP.lock();
+	std::cout << "\n***** ENVOI TC *****\n";
+	std::cout << "\n MPR LISTE \n**************** " << std::endl;
+	for (std::list<IPv6>::iterator ipv = mMyMprList.begin();
+			ipv != mMyMprList.end(); ipv++) {
+		std::cout << ipv->toChar() << std::endl;
 	}
+	std::cout << "********************\n";
+	mMutexIP.unlock();
+	sendTc();
+
 	/* appeler fonctions de construction et d'envoi de message Tc */
 }
-/*
- void Node::selectMpr(){
- // 1ere étape
- // définir le noeud avec le + de voisin+1
- mMyMprList.clear();
- IPv6 mpr; // IP du MPR élu
- std::list<IPv6> mprNeighbor; // voisin du MPR
- std::list<std::list<IPv6> > updatelist;
- updatelist=mTwoHopNeighborIP;
- bool ajoutMpr=false;
- std::cout<<"\nSelect MPR TOTO AVANT FOR 1\n";
- for(std::list<IPv6>::iterator voisin=mNeighborIP.begin();voisin!=mNeighborIP.end();++voisin){
- ajoutMpr=false;
- int cptTwoHop =0;
- //std::cout<<"\n select MPR TOTO AVANT FOR 2\n";
- for(std::list<std::list<IPv6> >::iterator twoHop=updatelist.begin();twoHop!=updatelist.end();++twoHop){
- int tmpTwoHop=0;
- std::list<IPv6> tmp; // liste voisin+1, voisin
- tmp = *twoHop;
- //std::cout<<"\n select MPR TOTO AVANT FOR 3\n";
- bool test=false;
- for(std::list<IPv6>::iterator it=tmp.begin();it != tmp.end();++it){
- //std::cout<<"\n ********************select MPR TOTO TEST\n";
- if(test){
- std::list<IPv6>::iterator voisinNeighbor = --it;
- std::cout << voisinNeighbor->toChar() << std::endl;
- std::cout << "Voisin : " << voisin->toChar() << std::endl;
- IPv6 ipToComp=voisin;
- std::cout << "ipTO COMP  : " << ipToComp.toChar() << std::endl;
 
- //std::cout<<"\n *****DEBUG ******************\n";
- if(it->isEgal(&ipToComp)){
- std::cout<<"\n select MPR TOTO ON TROUVE\n";
- tmpTwoHop++;
- tmp.push_back(*voisinNeighbor);
- std::cout<<"\n select MPR TOTO AJOUT tmp\n";
- }
- } else {
- test=true;
- //std::cout<<"\n ********************BARKDZF?KSDFK?QSDK? QSDC \n";
- }
+int Node::selectMpr(std::list<std::list<IPv6> > TwoHopList,
+		std::list<IPv6> NeighborList) {
+	if (TwoHopList.size() == 0) {
+		return 1;
+	}
 
- }
- if(tmpTwoHop>cptTwoHop){
- ajoutMpr=true;
- std::cout<<"\n prout ooooooooooooooooooooo\n";
+	std::list<std::list<IPv6> > twoHopNeighborIP = TwoHopList;
+	std::list<IPv6> neighborIP = NeighborList;
+	IPv6 mpr;
+	std::list<IPv6> vMpr;
+	int nbrVoisMpr = 0;
+	bool ajoutMpr = false;
 
- cptTwoHop=tmpTwoHop;
- mpr=voisin;
- mprNeighbor=tmp;
- }
- }
- }
- ;
- if(ajoutMpr){
- mMyMprList.push_back(mpr);// on ajoute le MPR élu a notre liste
- //2em etape
- //retirer lles voisin +1 du voisin choisi au dessus et le voisin
- for(std::list<std::list<IPv6> >::iterator update=updatelist.begin(); update!=updatelist.end();++update){
- for(std::list<IPv6>::iterator it2=update->begin();it2 != update->end();++it2){
- if(it2->isEgal(&mpr))
- updatelist.erase(update);
- }
- }
- // 3em etape
- //std::cout<<"APPEL A RECUR\n";
- //recursivSelectMpr(updatelist);
- }
- }
- */
-/*void Node::recursivSelectMpr(std::list<std::list<IPv6> > liste){
- if(liste.size()<1)
- return;
- IPv6* mpr; // IP du MPR élu
- std::list<IPv6> mprNeighbor; // voisin+1 du MPR
- std::list<std::list<IPv6> > updatelist;
- updatelist=liste;
- bool ajoutMpr=false;
- for(std::list<IPv6>::iterator voisin=mNeighborIP.begin();voisin!=mNeighborIP.end();++voisin){
- int cptTwoHop =0;
- IPv6 *ipToComp=new IPv6();
- ipToComp->setIPv6(voisin);
- ajoutMpr=false;
- for(std::list<std::list<IPv6> >::iterator twoHop=updatelist.begin();twoHop!=updatelist.end();++twoHop){
- int tmpTwoHop=0;
- std::list<IPv6> tmp;
- bool test=false;
- for(std::list<IPv6>::iterator it=twoHop->begin();it != twoHop->end();++it){
- if(test){
- std::list<IPv6>::iterator voisinNeighbor = --it;
- if(it->isEgal(ipToComp)){
- tmpTwoHop++;
- tmp.push_back(*voisinNeighbor);
- }
- }else{
- test=true;
- }
- }
- if(tmpTwoHop>cptTwoHop){
- ajoutMpr=true;
- cptTwoHop=tmpTwoHop;
- mpr=ipToComp;
- mprNeighbor=tmp;
- }
- }
- }
- if(ajoutMpr){
- mMyMprList.push_back(*mpr);// on ajoute le MPR élu a notre liste
- //2em etape
- //retirer lles voisin +1 du voisin choisi au dessus et le voisin
- for(std::list<std::list<IPv6> >::iterator update=updatelist.begin(); update!=updatelist.end();++update){
- for(std::list<IPv6>::iterator it2=update->begin();it2 != update->end();++it2){
- if(it2->isEgal(mpr))
- updatelist.erase(update);
- }
- }
- // 3em etape
- recursivSelectMpr(updatelist);
- }
- }
- */
+	for (std::list<IPv6>::iterator v = neighborIP.begin();
+			v != neighborIP.end(); ++v) {
+		int cptV = 0;
+		std::list<IPv6> listVoisin;
+		for (std::list<std::list<IPv6> >::iterator vi =
+				twoHopNeighborIP.begin(); vi != twoHopNeighborIP.end(); ++vi) {
+			std::list<IPv6> listIP = *vi;
+			bool passage = false;
+			for (std::list<IPv6>::iterator ipv = listIP.begin();
+					ipv != listIP.end(); ipv++) {
+
+				std::list<IPv6>::iterator fv;
+				if (passage) {
+					fv = listIP.begin();
+					IPv6 ipToComp = *ipv;
+					if (v->isEgal(&ipToComp)) {
+						cptV++;
+						listVoisin.push_back(*fv);
+					}
+				} else {
+					passage = true;
+				}
+			}
+
+		}
+		if (cptV > nbrVoisMpr) {
+			ajoutMpr = true;
+			mpr = *v;
+			nbrVoisMpr = cptV;
+			vMpr.clear();
+			vMpr = listVoisin;
+		}
+	}
+
+	mMyMprList.push_back(mpr);
+
+	for (std::list<IPv6>::iterator ipv = neighborIP.begin();
+			ipv != neighborIP.end(); ipv++) {
+		if (ipv->isEgal(&mpr)) {
+			neighborIP.erase(ipv);
+			break;
+		}
+	}
+
+	/*
+	 * on place les route a twoHOP suprimé a supprimé sur la route systeme !
+	 */
+
+	mMutexTwoHopTable.lock();
+	for (std::list<Route>::iterator tableroute = mTwoHopNeighborTable.begin();
+			tableroute != mTwoHopNeighborTable.end(); tableroute++) {
+		for (std::list<IPv6>::iterator ipv = vMpr.begin(); ipv != vMpr.end();
+				ipv++) {
+			IPv6 ipToComp = *ipv;
+			if (tableroute->getIpDest()->isEgal(&ipToComp)) {
+				if (!tableroute->getNextHop()->isEgal(&mpr)) {
+					tableroute->setAction(DEL);
+				}
+			}
+		}
+	}
+	mMutexTwoHopTable.unlock();
+
+	for (std::list<std::list<IPv6> >::iterator vi = twoHopNeighborIP.begin();
+			vi != twoHopNeighborIP.end(); ++vi) {
+		IPv6 ipToComp = *(vi->begin());
+		for (std::list<IPv6>::iterator ipv = vMpr.begin(); ipv != vMpr.end();
+				ipv++) {
+			if (ipv->isEgal(&ipToComp)) {
+				vi = twoHopNeighborIP.erase(vi);
+				vi--;
+			}
+		}
+	}
+
+	if (twoHopNeighborIP.size() != 0) {
+		selectMpr(twoHopNeighborIP, neighborIP);
+	}
+	return 0;
+}
+
 int Node::addNeighborTable(Route *route) {
 // maté le tableau dès qu'on tombe sur un NULL on ajoute
 // erreur si Plein
@@ -170,133 +149,139 @@ int Node::addNeighborTable(Route *route) {
 		std::cout << "ERROR : Add Neighbor with Metric > 1" << std::endl;
 		return 2;
 	} else {
+		mMutexNeighborTable.lock();
 		for (std::list<Route>::iterator it = mNeighborTable.begin();
 				it != mNeighborTable.end(); ++it) {
 			if (it->getIpDest()->isEgal(route->getIpDest())) {
 				std::cout << "ERROR : Neighbor Already Exist" << std::endl;
+				mMutexNeighborTable.unlock();
 				return 3;
 			}
 		}
-		std::cout << "AJOUT Voisin :  \n" << route->getIpDest()->toChar()
-				<< std::endl;
+		route->setAction(ADD);
 		mNeighborTable.push_back(*route);
+		mMutexNeighborTable.unlock();
+		return 0;
 	}
 	return 1;
 }
 
 int Node::addNeighbor(Route* route) {
-	if (addNeighborTable(route)) {
+	if (addNeighborTable(route) == 0) {
+		mMutexIP.lock();
 		mNeighborIP.push_back(*route->getIpDest());
-		//selectMpr();
-		std::cout << "MAJ MPR\n";
+		mMutexIP.unlock();
 		return 0;
 	}
-	std::cout << "Erreur ajout route voisin\n";
+	std::cout << "ERROR : Adding Neighbor Route\n";
 	return 1;
 
 }
-int Node::addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop,
-		int action) {
-	Route *route = new Route(ipDest, ipSource, metric, nextHop, action);
-	if (addNeighborTable(route)) {
-		mNeighborIP.push_back(*ipDest);
-		// selectMpr();
-		std::cout << "MAJ MPR\n";
-		return 0;
-	}
-	std::cout << "Erreur ajout route voisin\n";
-	return 1;
+int Node::addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop) {
+	Route *route = new Route(ipDest, ipSource, metric, nextHop);
+	return addNeighbor(route);
 }
 
 int Node::addTwoHopNeighborTable(Route *route) {
-// MAté le tableau TwoHOP Null on ajoute la route
-// erreur si plein
-// erruer si metric !=2
+
 	if (route->getMetric() != 2) {
 		std::cout << "ERROR : Add Two Hop Neighbor with Metric != 2"
 				<< std::endl;
 		return 2;
 	} else {
+		bool nextHopExist = false;
+		mMutexTwoHopTable.lock();
 		for (std::list<Route>::iterator it = mTwoHopNeighborTable.begin();
 				it != mTwoHopNeighborTable.end(); ++it) {
 			if (it->getIpDest()->isEgal(route->getIpDest())) {
 				std::cout << "ERROR : Two Hop Neighbor Already Exist"
 						<< std::endl;
+				mMutexTwoHopTable.unlock();
 				return 3;
 			}
 		}
+		mMutexNeighborTable.lock();
 		for (std::list<Route>::iterator it = mNeighborTable.begin();
 				it != mNeighborTable.end(); ++it) {
 			if (it->getIpDest()->isEgal(route->getIpDest())) {
 				std::cout << "ERROR : Dest is a Neighbor" << std::endl;
+				mMutexNeighborTable.unlock();
+				mMutexTwoHopTable.unlock();
 				return 4;
 			}
+			if (it->getNextHop()->isEgal(route->getNextHop())) {
+				nextHopExist = true;
+			}
 		}
-		std::cout << "AJOUT Voisin +1 :  \n" << route->getIpDest()->toChar()
-				<< std::endl;
-		mTwoHopNeighborTable.push_back(*route);
+		mMutexNeighborTable.unlock();
+		if (nextHopExist) {
+			route->setAction(ADD);
+			mTwoHopNeighborTable.push_back(*route);
+			mMutexTwoHopTable.unlock();
+			return 0;
+		} else {
+			std::cout << "ERROR : Hop to access Destination doesn't exists\n";
+			mMutexTwoHopTable.unlock();
+			return 5;
+		}
 	}
 	return 1;
 }
 
 int Node::addTwoHopNeighbor(Route* route) {
 	std::list<IPv6> TwoHop;
-	if (addTwoHopNeighborTable(route)) {
+	if (addTwoHopNeighborTable(route) == 0) {
 		TwoHop.push_back(*route->getIpDest());
 		TwoHop.push_back(*route->getNextHop());
+		mMutexIP.lock();
 		mTwoHopNeighborIP.push_back(TwoHop);
-		//selectMpr();
-		std::cout << "MAJ MPR\n";
+		clearMpr();
+		selectMpr(mTwoHopNeighborIP, mNeighborIP);
+		mMutexIP.unlock();
 		return 0;
 	}
-	std::cout << " Erreur d'ajout de route two hop" << std::endl;
+	std::cout << " ERROR : Adding TwoHop route" << std::endl;
 	return 1;
 }
 int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* ipSource, int metric,
-		IPv6* nextHop, int action) {
-	Route *route = new Route(ipDest, ipSource, metric, nextHop, action);
-	std::list<IPv6> TwoHop;
-	if (addTwoHopNeighborTable(route)) {
-		TwoHop.push_back(*ipDest);
-		TwoHop.push_back(*nextHop);
-		mTwoHopNeighborIP.push_back(TwoHop);
-		// selectMpr();
-		std::cout << "MAJ MPR\n";
-		return 0;
-	}
-	std::cout << " Erreur d'ajout de route" << std::endl;
-	return 1;
+		IPv6* nextHop) {
+	Route *route = new Route(ipDest, ipSource, metric, nextHop);
+	return addTwoHopNeighbor(route);
 }
 
 int Node::delNeighbor(IPv6* ipToDelete) {
-// maté route.sIpDest du tableau
-// Remonter tout les élém en dessous
-// ajouter NULL a la derniere ligne
 
 	/*
 	 * On place action de la route sur mNeighborTable a DEL
 	 */
+	mMutexNeighborTable.lock();
 	for (std::list<Route>::iterator it = mNeighborTable.begin();
 			it != mNeighborTable.end(); ++it) {
 		if (it->getIpDest()->isEgal(ipToDelete)) {
-			std::cout << "Suppression OK : Neighbor" << std::endl;
 			it->setAction(DEL);
-
+			break;
 		}
 	}
+	mMutexNeighborTable.unlock();
 
 	/*
 	 * Supprime le neighbor de la liste des HopNgihborIP
 	 */
+	bool unlock = false;
+	mMutexIP.lock();
 	for (std::list<IPv6>::iterator it = mNeighborIP.begin();
 			it != mNeighborIP.end(); ++it) {
 		if (it->isEgal(ipToDelete)) {
 			mNeighborIP.erase(it);
-			std::cout << "Suppression de NeighborIP" << std::endl;
-			//selectMpr();
-			std::cout << "MAJ MPR\n";
+			clearMpr();
+			selectMpr(mTwoHopNeighborIP, mNeighborIP);
+			unlock = true;
+			mMutexIP.unlock();
 			return 0;
 		}
+	}
+	if (!unlock) {
+		mMutexIP.unlock();
 	}
 	std::cout << "ERROR : Neighbor not Found \n";
 	return 1;
@@ -306,41 +291,98 @@ int Node::delNeighbor(Route* route) {
 	return delNeighbor(ip);
 }
 
-int Node::delTwoHopNeighbor(IPv6* ipToDelete) {
+int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
 // maté route.sIpDest du tableau
 // Remonter tout les élém en dessous
 // ajouter NULL a la derniere ligne
 	/*
 	 * Place l'action de la route sur mTwoHopNeighborTable a DEL
 	 */
+	mMutexTwoHopTable.lock();
 	for (std::list<Route>::iterator it = mTwoHopNeighborTable.begin();
 			it != mTwoHopNeighborTable.end(); ++it) {
-		if (it->getIpDest()->isEgal(ipToDelete)) {
-			std::cout << "Suppression OK : Neighbor" << std::endl;
+		if (it->getIpDest()->isEgal(ipToDelete)
+				&& it->getNextHop()->isEgal(ipHopToDelete)) {
 			it->setAction(DEL);
+			break;
 		}
 	}
+	mMutexTwoHopTable.unlock();
 	/*
 	 * Supprime le 2 hop neighbor de la liste des TwoHopNgihborIP
 	 */
+	bool unlock = false;
+	mMutexIP.lock();
 	for (std::list<std::list<IPv6> >::iterator it2 = mTwoHopNeighborIP.begin();
 			it2 != mTwoHopNeighborIP.end(); ++it2) {
 		std::list<IPv6> temp = *it2;
 		std::list<IPv6>::iterator tempIt = temp.begin();
 		if (tempIt->isEgal(ipToDelete)) {
-			mTwoHopNeighborIP.erase(it2);
-			//  selectMpr();
-			std::cout << "Suppression de 2HopNeighborIP" << std::endl;
-			return 0;
+			++tempIt;
+			if (tempIt->isEgal(ipHopToDelete)) {
+				mTwoHopNeighborIP.erase(it2);
+				clearMpr();
+				selectMpr(mTwoHopNeighborIP, mNeighborIP);
+				unlock = true;
+				mMutexIP.unlock();
+				return 0;
+			}
 		}
 	}
-
+	if (!unlock) {
+		mMutexIP.unlock();
+	}
 	std::cout << "ERROR : Two Hop Neighbor not Found \n";
 	return 1;
 }
 int Node::delTwoHopNeighbor(Route* route) {
 	IPv6* ip = route->getIpDest();
-	return delTwoHopNeighbor(ip);
+	IPv6* ip2 = route->getNextHop();
+	return delTwoHopNeighbor(ip, ip2);
+}
+
+int Node::eraseTwoHop(IPv6 *ipDestToDel, IPv6 *ipNextHopToDel) {
+	mMutexTwoHopTable.lock();
+	bool unlock = false;
+	for (std::list<Route>::iterator twoHopTable = mTwoHopNeighborTable.begin();
+			twoHopTable != mTwoHopNeighborTable.end(); twoHopTable++) {
+		if (twoHopTable->getAction() == DEL
+				&& twoHopTable->getIpDest()->isEgal(ipDestToDel)
+				&& twoHopTable->getNextHop()->isEgal(ipNextHopToDel)) {
+			mTwoHopNeighborTable.erase(twoHopTable);
+			unlock = true;
+			mMutexTwoHopTable.unlock();
+			return 0;
+		}
+	}
+	std::cout << "ERROR : Erasing a two hop route from Table" << std::endl;
+	if(!unlock){
+	mMutexTwoHopTable.unlock();
+	}
+	return 1;
+
+}
+
+int Node::eraseNeighbor(IPv6 *ipToDel) {
+	mMutexNeighborTable.lock();
+	bool unlock=false;
+	for (std::list<Route>::iterator twoHopTable = mNeighborTable.begin();
+			twoHopTable != mNeighborTable.end(); twoHopTable++) {
+		if (twoHopTable->getAction() == DEL
+				&& twoHopTable->getIpDest()->isEgal(ipToDel)
+				&& twoHopTable->getNextHop()->isEgal(ipToDel)) {
+			mNeighborTable.erase(twoHopTable);
+			unlock = true;
+			mMutexNeighborTable.unlock();
+			return 0;
+		}
+	}
+	std::cout << "ERROR : Erasing a neighbor route from Table" << std::endl;
+	if(!unlock){
+	mMutexNeighborTable.unlock();
+	}
+	return 1;
+
 }
 
 std::string Node::getMacAdress(char * cmd) {

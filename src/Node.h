@@ -7,8 +7,6 @@
 
 //#ifndef NODE_H
 //#define NODE_H
-#define MAX_NEIGHBOR 30
-#define MAX_TWOHOPNEIGHBOR MAX_NEIGHBOR*MAX_NEIGHBOR
 #define HELLO_INTERVAL 2
 #define TC_INTERVAL 5
 
@@ -20,6 +18,8 @@
 #include <bitset>
 #include <boost/algorithm/string.hpp>
 #include <sstream>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include "Route.h"
 #include "IPv6.h"
 
@@ -32,8 +32,8 @@ private:
 
 	bool mMpr;
 	IPv6 *mInterface;
-	boost::thread mTimerHello;
-	boost::thread mTimerTc;
+	boost::thread mTimerHello, mTimerTc;
+	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable;
 	std::list<Route> mNeighborTable, mTwoHopNeighborTable;
 	std::list<IPv6> mNeighborIP, mMyMprList;
 	std::list<std::list<IPv6> > mTwoHopNeighborIP;
@@ -68,14 +68,19 @@ private:
 	 *
 	 * 	Look at the TwoHopNeighborIP and choose the node's MPR by adding the MPR to the mMyMprList
 	 */
-	void selectMpr();
+	int selectMpr(std::list<std::list<IPv6> > TwoHopList,
+			std::list<IPv6> NeighborList);
 
 	/**
-	 * Func recursivSelectMpr()
+	 * Func clearMpr()
 	 *
-	 *   call by selectMPR and select all MPR for all 2HOP neighbor
+	 *	Clear the MPR list before refreshing selectMpr()
 	 */
-	//void recursivSelectMpr(std::list<std::list<IPv6> > liste);
+
+	inline void clearMpr() {
+		mMyMprList.clear();
+	}
+
 	/**
 	 * Func getMacAdress
 	 * Get the mac adress of the wireless interface
@@ -159,8 +164,7 @@ public:
 	 *	   1 if !success
 	 */
 	int addNeighbor(Route* route);
-	int addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop,
-			int action);
+	int addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop);
 
 	/**
 	 * Func addTwoHopNeighbor
@@ -173,7 +177,7 @@ public:
 	 */
 	int addTwoHopNeighbor(Route* route);
 	int addTwoHopNeighbor(IPv6* ipDest, IPv6* ipSource, int metric,
-			IPv6* nextHop, int action);
+			IPv6* nextHop);
 
 	/**
 	 * Func delNeighbor
@@ -199,7 +203,15 @@ public:
 	 */
 
 	int delTwoHopNeighbor(Route* route);
-	int delTwoHopNeighbor(IPv6* ipToDelete);
+	int delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete);
+
+	/**
+	 * Func erase**
+	 * 	Erase a route from the differents Table after we delete it from the kernel
+	 *  params : IP of the route to del
+	 */
+	int eraseTwoHop(IPv6 *ipDestToDel, IPv6 *ipNextHopToDel);
+	int eraseNeighbor(IPv6 *ipToDel);
 
 	/**
 	 * Func macToIPv6
