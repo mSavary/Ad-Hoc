@@ -9,6 +9,7 @@
 #define IPV6_H_
 #include <sstream>
 #include <list>
+#include <boost/lexical_cast.hpp>
 #define EN_TETE_IPv6 0x2011
 
 class IPv6
@@ -22,6 +23,7 @@ public:
 			int scope6,
 			int scope7,
 			int scope8);
+	IPv6(std::string IPv6Str);
 	int getScope(int scope);
 	void setIPv6(IPv6* ip);
 	std::string toChar();
