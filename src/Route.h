@@ -30,8 +30,7 @@ public:
 	Route(IPv6 *ipDest,
 			IPv6 *nextHop,
 			int metric,
-			IPv6 *interface,
-			int action);
+			IPv6 *interface);
 	IPv6* getIpDest();
 	IPv6* getNextHop();
 	int getMetric();

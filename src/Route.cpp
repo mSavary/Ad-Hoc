@@ -11,13 +11,12 @@ Route::Route() {
 Route::Route(IPv6 *ipDest,
 				IPv6 *nextHop,
 				int metric,
-				IPv6 *interface,
-				int action){
+				IPv6 *interface){
 	mIpDest = ipDest;
 	mNextHop = nextHop;
 	mMetric = metric;
 	mInterface = interface;
-	mAction = action;
+	mAction = NONE;
 }
 
 IPv6* Route::getIpDest(){
