@@ -1,12 +1,18 @@
 #include "Node.h"
 
 Node::Node(){
-	mMpr=false;
-	mInterface = new IPv6 (0x208,0xcaff,0xfe34,0xa522);// faire fonction pour créer l'IPv6 a partir de Mac
 
-	mTimerHello= 2;
-	mTimerTc = 5;
+	mMpr =false;
+	mInterface = new IPv6 (0x208,0xcaff,0xfe34,0xa522);
+	mTimerHello = boost::thread(&Node::sendHello, this);
+	mTimerTc = boost::thread(&Node::sendTc, this);
 
+}
+
+Node::~Node() {
+	// TODO Auto-generated destructor stub
+	mTimerHello.join();
+	mTimerTc.join();
 }
 
 void Node::sendHello(){
@@ -14,6 +20,12 @@ void Node::sendHello(){
 // construire le Hello ( voir si on le fait dans le constructeur vu qu'il change pas ? )
 // envoi du Hello
 // redéclencher le timer
+
+	 while(1){
+		 sleep(HELLO_INTERVAL);
+		 std::cout << "\n***** ENVOI HELLO *****\n";
+	 }
+	 /* appeler fonctions de construction et d'envoi de message Hello */
 }
 
 void Node::sendTc(){
@@ -22,14 +34,20 @@ void Node::sendTc(){
 // regarder si on est MPR
 // 	alors envoi du TC
 // redéclencher le timer
-}
 
+	while(1){
+			 sleep(TC_INTERVAL);
+			 std::cout << "\n***** ENVOI TC *****\n";
+		 }
+	/* appeler fonctions de construction et d'envoi de message Tc */
+}
+/*
 void Node::selectMpr(){
 // 1ere étape
 	// définir le noeud avec le + de voisin+1
 	mMyMprList.clear();
-	IPv6* mpr; // IP du MPR élu
-	std::list<IPv6> mprNeighbor; // voisin+1 du MPR
+	IPv6 mpr; // IP du MPR élu
+	std::list<IPv6> mprNeighbor; // voisin du MPR
 	std::list<std::list<IPv6> > updatelist;
 	updatelist=mTwoHopNeighborIP;
 	bool ajoutMpr=false;
@@ -37,26 +55,24 @@ void Node::selectMpr(){
 	for(std::list<IPv6>::iterator voisin=mNeighborIP.begin();voisin!=mNeighborIP.end();++voisin){
 		ajoutMpr=false;
 		int cptTwoHop =0;
-		IPv6* ipToComp=new IPv6();
-		ipToComp->setIPv6(voisin);
-		std::cout<<" IP TO COMP "<<ipToComp->toChar()<<std::endl;
 		//std::cout<<"\n select MPR TOTO AVANT FOR 2\n";
 		for(std::list<std::list<IPv6> >::iterator twoHop=updatelist.begin();twoHop!=updatelist.end();++twoHop){
 			int tmpTwoHop=0;
-			std::list<IPv6> tmp;
-
+			std::list<IPv6> tmp; // liste voisin+1, voisin
+			tmp = *twoHop;
 			//std::cout<<"\n select MPR TOTO AVANT FOR 3\n";
 			bool test=false;
-			for(std::list<IPv6>::iterator it=twoHop->begin();it != twoHop->end();++it){
+			for(std::list<IPv6>::iterator it=tmp.begin();it != tmp.end();++it){
 				//std::cout<<"\n ********************select MPR TOTO TEST\n";
-				IPv6 *ipToTest=new IPv6();
-				ipToTest->setIPv6(it);
-				std::cout<<" IP TO TEST "<<ipToComp->toChar()<<std::endl;
 				if(test){
 					std::list<IPv6>::iterator voisinNeighbor = --it;
+					std::cout << voisinNeighbor->toChar() << std::endl;
+					std::cout << "Voisin : " << voisin->toChar() << std::endl;
+					IPv6 ipToComp=voisin;
+					std::cout << "ipTO COMP  : " << ipToComp.toChar() << std::endl;
 
 					//std::cout<<"\n *****DEBUG ******************\n";
-					if(ipToTest->isEgal(ipToComp)){
+					if(it->isEgal(&ipToComp)){
 						std::cout<<"\n select MPR TOTO ON TROUVE\n";
 						tmpTwoHop++;
 						tmp.push_back(*voisinNeighbor);
@@ -73,29 +89,29 @@ void Node::selectMpr(){
 								std::cout<<"\n prout ooooooooooooooooooooo\n";
 
 								cptTwoHop=tmpTwoHop;
-								mpr=ipToComp;
+								mpr=voisin;
 								mprNeighbor=tmp;
 							}
 						}
 	}
 ;
 	if(ajoutMpr){
-		mMyMprList.push_back(*mpr);// on ajoute le MPR élu a notre liste
+		mMyMprList.push_back(mpr);// on ajoute le MPR élu a notre liste
 //2em etape
 	//retirer lles voisin +1 du voisin choisi au dessus et le voisin
 	for(std::list<std::list<IPv6> >::iterator update=updatelist.begin(); update!=updatelist.end();++update){
 		for(std::list<IPv6>::iterator it2=update->begin();it2 != update->end();++it2){
-			if(it2->isEgal(mpr))
+			if(it2->isEgal(&mpr))
 				updatelist.erase(update);
 		}
 	}
 // 3em etape
-	std::cout<<"APPEL A RECUR\n";
-	recursivSelectMpr(updatelist);
+	//std::cout<<"APPEL A RECUR\n";
+	//recursivSelectMpr(updatelist);
 	}
 }
-
-void Node::recursivSelectMpr(std::list<std::list<IPv6> > liste){
+*/
+/*void Node::recursivSelectMpr(std::list<std::list<IPv6> > liste){
 	if(liste.size()<1)
 		return;
 	IPv6* mpr; // IP du MPR élu
@@ -145,7 +161,7 @@ mMyMprList.push_back(*mpr);// on ajoute le MPR élu a notre liste
 recursivSelectMpr(updatelist);
 	}
 }
-
+*/
 int Node::addNeighborTable(Route *route){
 // maté le tableau dès qu'on tombe sur un NULL on ajoute
 // erreur si Plein
@@ -169,7 +185,7 @@ return 1;
 int Node::addNeighbor(Route* route){
 	if(addNeighborTable(route)){
 		mNeighborIP.push_back(*route->getIpDest());
-		  selectMpr();
+		  //selectMpr();
 		  std::cout<<"MAJ MPR\n";
 		return 0;
 	}
@@ -203,6 +219,12 @@ int Node::addTwoHopNeighborTable(Route *route){
 				  return 3;
 			  }
 		  }
+		  for (std::list<Route>::iterator it=mNeighborTable.begin(); it != mNeighborTable.end(); ++it){
+			  if (it->getIpDest()->isEgal(route->getIpDest())){
+				  std::cout<<"ERROR : Dest is a Neighbor"<<std::endl;
+				  return 4;
+			  }
+		  }
 		std::cout<<"AJOUT Voisin +1 :  \n"<<route->getIpDest()->toChar()<<std::endl;
 		mTwoHopNeighborTable.push_back(*route);
 	}
@@ -215,7 +237,7 @@ int Node::addTwoHopNeighbor(Route* route){
 		TwoHop.push_back(*route->getIpDest());
 		TwoHop.push_back(*route->getNextHop());
 		mTwoHopNeighborIP.push_back(TwoHop);
-		  selectMpr();
+		 //selectMpr();
 		  std::cout<<"MAJ MPR\n";
 		return 0;
 	}
@@ -260,7 +282,7 @@ int Node::delNeighbor(IPv6* ipToDelete){
 		  if(it->isEgal(ipToDelete)){
 			  mNeighborIP.erase(it);
 			  std::cout<<"Suppression de NeighborIP"<<std::endl;
-			  selectMpr();
+			  //selectMpr();
 			  std::cout<<"MAJ MPR\n";
 			  return 0;
 		  }
@@ -294,7 +316,7 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete){
 		  std::list<IPv6>::iterator tempIt= temp.begin();
 		  if(tempIt->isEgal(ipToDelete)){
 			  mTwoHopNeighborIP.erase(it2);
-			  selectMpr();
+			//  selectMpr();
 			  std::cout<<"Suppression de 2HopNeighborIP"<<std::endl;
 			  return 0;
 		  }

@@ -10,32 +10,45 @@
 
 #define MAX_NEIGHBOR 30
 #define MAX_TWOHOPNEIGHBOR MAX_NEIGHBOR*MAX_NEIGHBOR
+#define HELLO_INTERVAL 2
+#define TC_INTERVAL 5
 
 #include <iostream>
 #include <list>
+#include <boost/thread/thread.hpp>
 #include "Route.h"
 #include "IPv6.h"
+
 class Node
 {
     private:
 
-	bool mMpr; // true if MPR
+	/*
+	 * *attributes
+	 */
+
+	bool mMpr;
 	IPv6 *mInterface;
-    int mTimerHello,
-        mTimerTc;
-
-    std::list<Route> mNeighborTable,
+	boost::thread mTimerHello;
+	boost::thread mTimerTc;
+	std::list<Route> mNeighborTable,
 					 mTwoHopNeighborTable;
-
     std::list<IPv6> mNeighborIP,
     				mMyMprList;
     std::list<std::list<IPv6> >	mTwoHopNeighborIP;
+
+
+    /*
+     * Private methods
+     */
+
 	/**
 	* Func sendHello()
 	* 	send a Hello to every one when mTimerHello is reach
 	*	(MUST NOT be transmitted)
 	*/
 	void sendHello();
+
 	/**
 	* Func sendTc()
 	* 	send a Tc message to every one when mTimerTc is reach
@@ -45,7 +58,7 @@ class Node
     void sendTc();
 
     /**
-     * Private func to add a route to the Table route ( call by public function see below )
+     * Allowing to add a route to the Table route ( call by public function see below )
      */
 	int addTwoHopNeighborTable(Route *route);
     int addNeighborTable(Route *route);
@@ -55,16 +68,18 @@ class Node
      *
      * 	Look at the TwoHopNeighborIP and choose the node's MPR by adding the MPR to the mMyMprList
      */
-    void selectMpr();
+   void selectMpr();
 
     /**
      * Func recursivSelectMpr()
      *
      *   call by selectMPR and select all MPR for all 2HOP neighbor
      */
-    void recursivSelectMpr(std::list<std::list<IPv6> > liste);
+   //void recursivSelectMpr(std::list<std::list<IPv6> > liste);
+
 
     public:
+
 	/**
 	* Constructor Node()
 	*
@@ -72,6 +87,9 @@ class Node
 	*       mMpr at false
 	*/
     Node();
+
+    virtual ~Node();
+
 	inline bool isMpr(){
 	    return mMpr;
 	}
