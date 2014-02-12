@@ -3,7 +3,8 @@
 Node::Node() {
 
 	mMpr = false;
-	mInterface = new IPv6(macToIpv6());
+	mInterface = setInterface();
+	mMyIp = new IPv6(macToIpv6());
 	mTimerHello = boost::thread(&Node::sendHello, this);
 	mTimerTc = boost::thread(&Node::sendTc, this);
 
@@ -19,12 +20,12 @@ void Node::sendHello() {
 	sleep(HELLO_INTERVAL);
 	mMutexIP.lock();
 	std::cout << "\n***** ENVOI HELLO *****";
-	std::cout << "\n NEIGHBOR LISTE \n****************" << std::endl;
-	for (std::list<IPv6>::iterator ipv = mNeighborIP.begin();
-			ipv != mNeighborIP.end(); ipv++) {
-		std::cout << "" << ipv->toChar() << "" << std::endl;
-	}
-	std::cout << "******************\n";
+	/*std::cout << "\n NEIGHBOR LISTE \n****************" << std::endl;
+	 for (std::list<IPv6>::iterator ipv = mNeighborIP.begin();
+	 ipv != mNeighborIP.end(); ipv++) {
+	 std::cout << "" << ipv->toChar() << "" << std::endl;
+	 }
+	 std::cout << "******************\n";*/
 	mMutexIP.unlock();
 	sendHello();
 	/* appeler fonctions de construction et d'envoi de message Hello */
@@ -33,16 +34,18 @@ void Node::sendHello() {
 void Node::sendTc() {
 
 	sleep(TC_INTERVAL);
-	mMutexIP.lock();
-	std::cout << "\n***** ENVOI TC *****\n";
-	std::cout << "\n MPR LISTE \n**************** " << std::endl;
-	for (std::list<IPv6>::iterator ipv = mMyMprList.begin();
-			ipv != mMyMprList.end(); ipv++) {
-		std::cout << ipv->toChar() << std::endl;
+	if (isMpr()) {
+		mMutexIP.lock();
+		std::cout << "\n***** ENVOI TC *****\n";
+		/*std::cout << "\n MPR LISTE \n**************** " << std::endl;
+		 for (std::list<IPv6>::iterator ipv = mMyMprList.begin();
+		 ipv != mMyMprList.end(); ipv++) {
+		 std::cout << ipv->toChar() << std::endl;
+		 }
+		 std::cout << "********************\n";*/
+		mMutexIP.unlock();
+		sendTc();
 	}
-	std::cout << "********************\n";
-	mMutexIP.unlock();
-	sendTc();
 
 	/* appeler fonctions de construction et d'envoi de message Tc */
 }
@@ -141,6 +144,12 @@ int Node::selectMpr(std::list<std::list<IPv6> > TwoHopList,
 	return 0;
 }
 
+std::string Node::setInterface() {
+	std::string iface = getResCmd("iwconfig | awk '$0 ~ /IEEE/ { print $1 }'");
+	iface = iface.substr(0, (unsigned) iface.length() - 1);
+	return iface;
+}
+
 int Node::addNeighborTable(Route *route) {
 // maté le tableau dès qu'on tombe sur un NULL on ajoute
 // erreur si Plein
@@ -177,8 +186,9 @@ int Node::addNeighbor(Route* route) {
 	return 1;
 
 }
-int Node::addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop) {
-	Route *route = new Route(ipDest, ipSource, metric, nextHop);
+int Node::addNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
+		std::string iface) {
+	Route *route = new Route(ipDest, nextHop, metric, iface);
 	return addNeighbor(route);
 }
 
@@ -209,7 +219,7 @@ int Node::addTwoHopNeighborTable(Route *route) {
 				mMutexTwoHopTable.unlock();
 				return 4;
 			}
-			if (it->getNextHop()->isEgal(route->getNextHop())) {
+			if (it->getIpDest()->isEgal(route->getNextHop())) {
 				nextHopExist = true;
 			}
 		}
@@ -243,9 +253,9 @@ int Node::addTwoHopNeighbor(Route* route) {
 	std::cout << " ERROR : Adding TwoHop route" << std::endl;
 	return 1;
 }
-int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* ipSource, int metric,
-		IPv6* nextHop) {
-	Route *route = new Route(ipDest, ipSource, metric, nextHop);
+int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
+		std::string iface) {
+	Route *route = new Route(ipDest, nextHop, metric, iface);
 	return addTwoHopNeighbor(route);
 }
 
@@ -341,51 +351,7 @@ int Node::delTwoHopNeighbor(Route* route) {
 	return delTwoHopNeighbor(ip, ip2);
 }
 
-int Node::eraseTwoHop(IPv6 *ipDestToDel, IPv6 *ipNextHopToDel) {
-	mMutexTwoHopTable.lock();
-	bool unlock = false;
-	for (std::list<Route>::iterator twoHopTable = mTwoHopNeighborTable.begin();
-			twoHopTable != mTwoHopNeighborTable.end(); twoHopTable++) {
-		if (twoHopTable->getAction() == DEL
-				&& twoHopTable->getIpDest()->isEgal(ipDestToDel)
-				&& twoHopTable->getNextHop()->isEgal(ipNextHopToDel)) {
-			mTwoHopNeighborTable.erase(twoHopTable);
-			unlock = true;
-			mMutexTwoHopTable.unlock();
-			return 0;
-		}
-	}
-	std::cout << "ERROR : Erasing a two hop route from Table" << std::endl;
-	if(!unlock){
-	mMutexTwoHopTable.unlock();
-	}
-	return 1;
-
-}
-
-int Node::eraseNeighbor(IPv6 *ipToDel) {
-	mMutexNeighborTable.lock();
-	bool unlock=false;
-	for (std::list<Route>::iterator twoHopTable = mNeighborTable.begin();
-			twoHopTable != mNeighborTable.end(); twoHopTable++) {
-		if (twoHopTable->getAction() == DEL
-				&& twoHopTable->getIpDest()->isEgal(ipToDel)
-				&& twoHopTable->getNextHop()->isEgal(ipToDel)) {
-			mNeighborTable.erase(twoHopTable);
-			unlock = true;
-			mMutexNeighborTable.unlock();
-			return 0;
-		}
-	}
-	std::cout << "ERROR : Erasing a neighbor route from Table" << std::endl;
-	if(!unlock){
-	mMutexNeighborTable.unlock();
-	}
-	return 1;
-
-}
-
-std::string Node::getMacAdress(char * cmd) {
+std::string Node::getResCmd(char * cmd) {
 	FILE* pipe = popen(cmd, "r");
 	if (!pipe)
 		return "ERROR";
@@ -421,11 +387,11 @@ std::string Node::bin2Hex(const std::string& s) {
 }
 
 std::string Node::macToIpv6() {
-	char * commande = "ifconfig | grep wlan | awk '$0 ~ /HWaddr/ { print $5 }'";
+	std::string commande ="ifconfig | grep "+mInterface+"| awk '$0 ~ /HWaddr/ { print $5 }'";
+	char * cmd = (char*) commande.c_str();
 	// todo : renvoyer erreur si chaine vide
-	std::string result = getMacAdress(commande);
+	std::string result = getResCmd(cmd);
 	std::string IPv6;
-
 	if (result.empty()) {
 		std::cout << "MAC adress not found\n";
 		//todo ; retourner erreur
@@ -447,6 +413,9 @@ std::string Node::macToIpv6() {
 
 	hexaStr = bin2Hex(binaryStr);
 
+	if (hexaStr.size() == 3) {
+		hexaStr.insert(2, "0");
+	}
 
 	// insert of first octet modified
 	IPv6.replace(0, 2, hexaStr.substr(2, 4));

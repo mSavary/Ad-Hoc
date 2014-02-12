@@ -31,9 +31,10 @@ private:
 	 */
 
 	bool mMpr;
-	IPv6 *mInterface;
+	std::string mInterface;
+	IPv6 *mMyIp;
 	boost::thread mTimerHello, mTimerTc;
-	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable;
+	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable,mMutexSystem;
 	std::list<Route> mNeighborTable, mTwoHopNeighborTable;
 	std::list<IPv6> mNeighborIP, mMyMprList;
 	std::list<std::list<IPv6> > mTwoHopNeighborIP;
@@ -88,7 +89,7 @@ private:
 	 * @ param : command to get the mac adress
 	 *
 	 */
-	std::string getMacAdress(char * cmd);
+	std::string getResCmd(char * cmd);
 
 	/**
 	 * Func Hex2Bin
@@ -105,6 +106,8 @@ private:
 	 * @param a binary string
 	 */
 	std::string bin2Hex(const std::string& s);
+
+	std::string setInterface();
 
 public:
 
@@ -126,12 +129,15 @@ public:
 		return mMyMprList;
 	}
 
-	inline IPv6* getInterface() {
+	inline std::string getInterface() {
 		return mInterface;
 	}
 
+	inline IPv6* getMyIp(){
+		return mMyIp;
+	}
+
 	inline std::list<Route> getNeighborTable() {
-		std::cout << mNeighborTable.size() << std::endl;
 		return mNeighborTable;
 	}
 	inline std::list<Route> getTwoHopNeighborTable() {
@@ -144,6 +150,21 @@ public:
 
 	inline std::list<std::list<IPv6> > getTwoHopNeighborIP() {
 		return mTwoHopNeighborIP;
+	}
+
+	inline void lockSystem(){
+		mMutexSystem.lock();
+	}
+
+	inline void releaseSystem(){
+		mMutexSystem.unlock();
+	}
+	inline void setNeighborTable (std::list<Route> liste){
+		mNeighborTable=liste;
+	}
+
+	inline void setTwoHopNeighborTable (std::list<Route> liste){
+		mTwoHopNeighborTable=liste;
 	}
 	/**
 	 * Func imMpr()
@@ -164,7 +185,7 @@ public:
 	 *	   1 if !success
 	 */
 	int addNeighbor(Route* route);
-	int addNeighbor(IPv6* ipDest, IPv6* ipSource, int metric, IPv6* nextHop);
+	int addNeighbor(IPv6* ipDest, IPv6* nextHop, int metric, std::string iface);
 
 	/**
 	 * Func addTwoHopNeighbor
@@ -176,8 +197,8 @@ public:
 	 *	   1 if !success
 	 */
 	int addTwoHopNeighbor(Route* route);
-	int addTwoHopNeighbor(IPv6* ipDest, IPv6* ipSource, int metric,
-			IPv6* nextHop);
+	int addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
+			std::string iface);
 
 	/**
 	 * Func delNeighbor
@@ -204,14 +225,6 @@ public:
 
 	int delTwoHopNeighbor(Route* route);
 	int delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete);
-
-	/**
-	 * Func erase**
-	 * 	Erase a route from the differents Table after we delete it from the kernel
-	 *  params : IP of the route to del
-	 */
-	int eraseTwoHop(IPv6 *ipDestToDel, IPv6 *ipNextHopToDel);
-	int eraseNeighbor(IPv6 *ipToDel);
 
 	/**
 	 * Func macToIPv6

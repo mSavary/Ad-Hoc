@@ -9,8 +9,7 @@
 #define IPV6_H_
 #include <sstream>
 #include <list>
-#include <boost/lexical_cast.hpp>
-#define EN_TETE_IPv6 0x2011
+#define EN_TETE_IPv6 0x2014
 
 class IPv6
 {

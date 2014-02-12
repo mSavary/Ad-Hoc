@@ -69,7 +69,6 @@ std::string IPv6::toChar() {
 		if (i > 3 && i < 7)
 			ip << ":";
 	}
-	ip << "/64";
 	return ip.str();
 }
 

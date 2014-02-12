@@ -22,7 +22,7 @@ private:
 	IPv6 	*mIpDest,
 			*mNextHop;
 	int		mMetric;
-	IPv6 	*mInterface;
+	std::string 	mInterface;
 	int 	mAction;
 
 public:
@@ -30,11 +30,11 @@ public:
 	Route(IPv6 *ipDest,
 			IPv6 *nextHop,
 			int metric,
-			IPv6 *interface);
+			std::string interface);
 	IPv6* getIpDest();
 	IPv6* getNextHop();
 	int getMetric();
-	IPv6* getInterface();
+	std::string getInterface();
 	int getAction();
 	void setAction(int action);
 	void setRoute(Route *route);

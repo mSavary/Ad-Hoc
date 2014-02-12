@@ -4,14 +4,14 @@ Route::Route() {
 	mIpDest = new IPv6();
 	mNextHop = new IPv6();
 	mMetric = 0;
-	mInterface = new IPv6();
+	mInterface = "wlan0";
 	mAction = 0;
 }
 
 Route::Route(IPv6 *ipDest,
 				IPv6 *nextHop,
 				int metric,
-				IPv6 *interface){
+				std::string interface){
 	mIpDest = ipDest;
 	mNextHop = nextHop;
 	mMetric = metric;
@@ -31,7 +31,7 @@ int Route::getMetric(){
 	return mMetric;
 }
 
-IPv6* Route::getInterface(){
+std::string Route::getInterface(){
 	return mInterface;
 }
 
@@ -47,11 +47,11 @@ void Route::setRoute(Route *route){
 	mIpDest->setIPv6(route->getIpDest());
 	mNextHop->setIPv6(route->getNextHop());
 	mMetric = route->getMetric();
-	mInterface->setIPv6(route->getInterface());
+	mInterface = route->getInterface();
 	mAction = route->getAction();
 }
 
 Route::~Route() {
-	delete mIpDest, mNextHop, mInterface;
+	//delete mIpDest, mNextHop, mInterface;
 }
 
