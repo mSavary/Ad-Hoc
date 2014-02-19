@@ -145,7 +145,7 @@ int Node::selectMpr(std::list<std::list<IPv6> > TwoHopList,
 }
 
 std::string Node::setInterface() {
-	std::string iface = getResCmd("iwconfig | awk '$0 ~ /IEEE/ { print $1 }'");
+	std::string iface = getResCmd("iwconfig 2>&1 |grep -e 'IEEE 802.11' |cut -f1 -d ' '");
 	iface = iface.substr(0, (unsigned) iface.length() - 1);
 	return iface;
 }
@@ -283,7 +283,6 @@ int Node::delNeighbor(IPv6* ipToDelete) {
 			it != mNeighborIP.end(); ++it) {
 		if (it->isEgal(ipToDelete)) {
 			mNeighborIP.erase(it);
-			std::cout<<" IF ONE HOP\n";
 			clearMpr();
 			selectMpr(mTwoHopNeighborIP, mNeighborIP);
 			unlock = true;
@@ -293,7 +292,6 @@ int Node::delNeighbor(IPv6* ipToDelete) {
 	}
 	if (!unlock) {
 		mMutexIP.unlock();
-		std::cout << " TOTOTEO\n";
 	}
 	std::cout << "ERROR : Neighbor not Found \n";
 	return 1;
@@ -332,7 +330,6 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
 		if (tempIt->isEgal(ipToDelete)) {
 			++tempIt;
 			if (tempIt->isEgal(ipHopToDelete)) {
-				std::cout<<" IF TWO HOP\n";
 				mTwoHopNeighborIP.erase(it2);
 				clearMpr();
 				selectMpr(mTwoHopNeighborIP, mNeighborIP);
@@ -344,7 +341,6 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
 	}
 	if (!unlock) {
 		mMutexIP.unlock();
-		std::cout << " TOTOTEO\n";
 	}
 	std::cout << "ERROR : Two Hop Neighbor not Found \n";
 	return 1;
@@ -391,7 +387,7 @@ std::string Node::bin2Hex(const std::string& s) {
 }
 
 std::string Node::macToIpv6() {
-	std::string commande = "ifconfig | grep " + mInterface
+	std::string commande = "ifconfig "+mInterface+"| grep " + mInterface
 			+ "| awk '$0 ~ /HWaddr/ { print $5 }'";
 	char * cmd = (char*) commande.c_str();
 	// todo : renvoyer erreur si chaine vide
