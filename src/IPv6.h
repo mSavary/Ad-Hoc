@@ -14,16 +14,16 @@
 class IPv6
 {
 private:
-	int mScope[8];
+	short mScope[8];
 
 public:
 	IPv6();
-	IPv6(int scope5,
-			int scope6,
-			int scope7,
-			int scope8);
+	IPv6(short scope5,
+			short scope6,
+			short scope7,
+			short scope8);
 	IPv6(std::string IPv6Str);
-	int getScope(int scope);
+	short getScope(int scope);
 	void setIPv6(IPv6* ip);
 	std::string toChar();
 	bool isEgal(IPv6* ip);

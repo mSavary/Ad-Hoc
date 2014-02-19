@@ -18,34 +18,48 @@ RoutingTable::RoutingTable() {
 
 /** METHODS */
 
-void RoutingTable::addRoute(Route *r) {
+void RoutingTable::addRoute(Route *r, bool neighb) {
 	/** systeme call to add a new route r in the kernel IPv6 Routing Table. */
 
 	Route *temp = r;
 	std::ostringstream syscall;
-	syscall << "ip -6 route add " << temp->getIpDest()->toChar() << "/128 via "
-			<< temp->getNextHop()->toChar() << " metric "<<temp->getMetric()<< " dev " << temp->getInterface();
+	if (neighb) {
+		syscall << "ip -6 route add " << temp->getIpDest()->toChar()
+				<< "/128  metric " << temp->getMetric() << " dev "
+				<< temp->getInterface();
+	} else {
+		syscall << "ip -6 route add " << temp->getIpDest()->toChar()
+				<< "/128 via " << temp->getNextHop()->toChar() << " metric "
+				<< temp->getMetric() << " dev " << temp->getInterface();
+	}
 	if (system((syscall.str()).c_str()))
 		std::cout << "ERROR SysCall add\n" << syscall.str() << std::endl;
 
 }
 
-void RoutingTable::deleteRoute(Route *r) {
+void RoutingTable::deleteRoute(Route *r, bool neighb) {
 	/** syscall to delete a existing route r in the kernel IPv6 Routing Table. */
 	Route *temp = r;
 	std::ostringstream syscall;
-	syscall << "ip -6 route del " << temp->getIpDest()->toChar() << "/128 via "
-			<< temp->getNextHop()->toChar() << " metric "<<temp->getMetric()<<" dev " << temp->getInterface();
+	if (neighb) {
+		syscall << "ip -6 route del " << temp->getIpDest()->toChar()
+				<< "/128 metric " << temp->getMetric() << " dev "
+				<< temp->getInterface();
+	} else {
+		syscall << "ip -6 route del " << temp->getIpDest()->toChar()
+				<< "/128 via " << temp->getNextHop()->toChar() << " metric "
+				<< temp->getMetric() << " dev " << temp->getInterface();
+	}
 	if (system((syscall.str()).c_str()))
 		std::cout << "ERROR SysCall del\n" << syscall.str() << std::endl;
 
 }
 
-void RoutingTable::updateRoute(Route *r) {
+void RoutingTable::updateRoute(Route *r, bool neighb) {
 	/** to update a route in the Routing Table */
 	Route *temp = r;
-	deleteRoute(temp);
-	addRoute(temp);
+	deleteRoute(temp, neighb);
+	addRoute(temp, neighb);
 
 }
 
@@ -60,22 +74,22 @@ void RoutingTable::systemTableUpdate(Node *noeud) {
 		Route route = *it;
 		switch (it->getAction()) {
 		case ADD: {
-			addRoute(&route);
+			addRoute(&route,true);
 			it->setAction(NONE);
 			it--;
 			break;
 		}
 		case DEL: {
 			//std::cout << " deleteVoisin \n";
+			deleteRoute(&route,true);
 			mRouteList.erase(it);
 			it--;
-			deleteRoute(&route);
-			noeud->delNeighbor(route.getIpDest());
+
 
 			break;
 		}
 		case UPD: {
-			updateRoute(&route);
+			updateRoute(&route,true);
 			it->setAction(NONE);
 			//std::cout << " updVoisin \n";
 			break;
@@ -111,22 +125,21 @@ void RoutingTable::systemTableUpdate(Node *noeud) {
 		switch (route.getAction()) {
 		case ADD: {
 			//std::cout << "addroute Voisin+2\n";
-			addRoute(&route);
+			addRoute(&route,false);
 			it->setAction(NONE);
 
 			break;
 		}
 		case DEL: {
 			//std::cout << " delete Voisin+2\n";
-			deleteRoute(&route);
+			deleteRoute(&route,false);
 			it = mRouteList.erase(it);
-			noeud->delTwoHopNeighbor(&route);
 			it--;
 			break;
 		}
 		case UPD: {
 			//std::cout << " upd Voisin+2\n";
-			updateRoute(&route);
+			updateRoute(&route,false);
 			it->setAction(NONE);
 			break;
 		}

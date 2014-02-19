@@ -36,14 +36,14 @@ private:
 	 *  	add a new route in the Routing Table of the application
 	 *  @param Route r
 	 */
-	void addRoute(Route *r); /** add a new route in the Routing Table of the application. */
+	void addRoute(Route *r,bool neighb); /** add a new route in the Routing Table of the application. */
 
 	/**
 	 *  Funcion delete route
 	 *  	delete an existing route from the Routing table of the application
 	 */
-	void deleteRoute(Route *r); /** delete an existing route from the Routing Table of the application. */
-	void updateRoute(Route *r); /** replace an existing by r if route r is better than the existing one. */
+	void deleteRoute(Route *r,bool neighb); /** delete an existing route from the Routing Table of the application. */
+	void updateRoute(Route *r,bool neighb); /** replace an existing by r if route r is better than the existing one. */
 };
 
 

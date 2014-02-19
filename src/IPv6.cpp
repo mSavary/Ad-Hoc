@@ -6,7 +6,7 @@ IPv6::IPv6() {
 	}
 }
 
-IPv6::IPv6(int scope5, int scope6, int scope7, int scope8) {
+IPv6::IPv6(short scope5, short scope6, short scope7, short scope8) {
 	mScope[0] = EN_TETE_IPv6;
 	mScope[1] = 0x0;
 	mScope[2] = 0x0;
@@ -42,13 +42,13 @@ IPv6::IPv6(std::string IPv6Str) {
 	mScope[1] = 0x0;
 	mScope[2] = 0x0;
 	mScope[3] = 0x0;
-	mScope[4] = array4;
-	mScope[5] = array5;
-	mScope[6] = array6;
-	mScope[7] = array7;
+	mScope[4] = (short)array4;
+	mScope[5] = (short)array5;
+	mScope[6] = (short)array6;
+	mScope[7] = (short)array7;
 }
 
-int IPv6::getScope(int scope) {
+short IPv6::getScope(int scope) {
 	return mScope[scope];
 }
 
