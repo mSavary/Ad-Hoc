@@ -23,6 +23,21 @@
 #include "Route.h"
 #include "IPv6.h"
 
+class Dest{
+private:
+	int mHops;
+	IPv6 *mIp;
+public:
+	Dest(int hop, IPv6* ip);
+	inline IPv6* getIp(){
+		return mIp;
+	}
+	inline int getHops(){
+		return mHops;
+	}
+
+};
+
 class Node {
 private:
 
@@ -34,10 +49,11 @@ private:
 	std::string mInterface;
 	IPv6 *mMyIp;
 	boost::thread mTimerHello, mTimerTc;
-	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable,mMutexSystem;
-	std::list<Route> mNeighborTable, mTwoHopNeighborTable;
+	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable,mMutexSystem,mMutexDestTable;
+	std::list<Route> mNeighborTable, mTwoHopNeighborTable, mDestTable;
 	std::list<IPv6> mNeighborIP, mMyMprList;
 	std::list<std::list<IPv6> > mTwoHopNeighborIP;
+	std::list<Dest> mDestPath;
 
 	/*
 	 * Private methods
@@ -63,6 +79,34 @@ private:
 	 */
 	int addTwoHopNeighborTable(Route *route);
 	int addNeighborTable(Route *route);
+
+	/**
+	 * Func addDestTable()
+	 *
+	 * @params : route is the route to add to the destTable
+	 */
+	int addDestTable(Route *route);
+
+
+
+	/**
+	 * Func addDestPath()
+	 *  	add a new Dest to mDestPath
+	 */
+	int addDestPath(IPv6 *ip,int hop);
+
+	/**
+	 * Func updDestTable
+	 * 		update a route to dest with a shortest path
+	 * 	@param : route new route to replace
+	 */
+	int updDestTable(Route *route);
+	/**
+	 * Func delDestTable
+	 * 		set route to DEL for system
+	 * 	@params : route route to del
+	 */
+	int delDestTable(Route *route);
 
 	/**
 	 * Func selectMpr()
@@ -166,6 +210,14 @@ public:
 	inline void setTwoHopNeighborTable (std::list<Route> liste){
 		mTwoHopNeighborTable=liste;
 	}
+
+	inline std::list<Route> getDestTable(){
+		return mDestTable;
+	}
+
+	inline void setDestTable(std::list<Route> liste){
+		mDestTable=liste;
+	}
 	/**
 	 * Func imMpr()
 	 *
@@ -233,6 +285,20 @@ public:
 	 * @return an IPv6
 	 */
 	std::string macToIpv6();
+
+	/**
+	 * Func checkDest
+	 *     check if a destination is already set or not and see if it's a shorter path if it exists
+	 */
+	int checkDest(Route *route);
+
+	/**
+	 * Func delDest
+	 * 	delete a dest from mDestPath and set the route to DEL
+	 * 	@params: route route to del
+	 */
+	int delDest(Route *route);
+
 };
 
 //#endif // CLIENT_H

@@ -48,7 +48,7 @@ void Route::setRoute(Route *route){
 	mNextHop->setIPv6(route->getNextHop());
 	mMetric = route->getMetric();
 	mInterface = route->getInterface();
-	mAction = route->getAction();
+	mAction = UPD;
 }
 
 Route::~Route() {

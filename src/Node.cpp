@@ -426,3 +426,76 @@ std::string Node::macToIpv6() {
 	return IPv6;
 }
 
+int Node::addDestTable(Route *route){
+	mDestTable.push_back(*route);
+	return 0;
+}
+
+int Node::updDestTable(Route *route){
+	std::list<Route>::iterator it = mDestTable.begin();
+	IPv6 *ipToComp = route->getIpDest();
+	for (; it!=mDestTable.end();it++){
+		if(it->getIpDest()->isEgal(ipToComp)){
+			it->setRoute(route);
+			break;
+		}
+	}
+	return 0;
+}
+
+int Node::delDestTable(Route *route){
+	std::list<Route>::iterator it = mDestTable.begin();
+	IPv6 *ipToComp = route->getIpDest();
+	for (; it!=mDestTable.end();it++){
+		if(it->getIpDest()->isEgal(ipToComp)){
+			it->setAction(DEL);
+			mDestTable.erase(it);
+			break;
+		}
+	}
+	return 0;
+}
+
+int Node::addDestPath(IPv6* ip,int hop){
+	Dest *newDest = new Dest(hop,ip);
+	mDestPath.push_back(*newDest);
+	return 0;
+}
+
+int Node::checkDest(Route *route){
+	bool upd=false;
+	IPv6 *ipToComp = route->getIpDest();
+	for( std::list<Dest>::iterator dest=mDestPath.begin();dest!=mDestPath.end();dest++){
+		if(dest->getIp()->isEgal(ipToComp)){
+			if(dest->getHops()<route->getMetric()){
+				mMutexDestTable.lock();
+				updDestTable(route);
+				mMutexDestTable.unlock();
+				upd=true;
+				break;
+			}
+		}
+	}
+	if(!upd){
+		mMutexIP.lock();
+		addDestPath(route->getIpDest(),route->getMetric());
+		mMutexIP.unlock();
+		mMutexDestTable.lock();
+		addDestTable(route);
+		mMutexDestTable.unlock();
+	}
+	return 0;
+}
+
+int Node::delDest(Route *route){
+	mMutexDestTable.lock();
+	delDestTable(route);
+	mMutexDestTable.unlock();
+	return 0;
+}
+
+Dest::Dest(int hops,IPv6* ip){
+	mHops=hops;
+	mIp = ip;
+}
+

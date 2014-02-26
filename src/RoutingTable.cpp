@@ -159,6 +159,50 @@ void RoutingTable::systemTableUpdate(Node *noeud) {
 
 	} //end of for
 	noeud->setTwoHopNeighborTable(mRouteList);
+	mRouteList.clear();
+	noeud->lockSystem();
+		mRouteList = noeud->getDestTable();
+		for (std::list<Route>::iterator it = mRouteList.begin();
+				it != mRouteList.end(); it++) {
+			Route route = *it;
+			switch (it->getAction()) {
+			case ADD: {
+				addRoute(&route,true);
+				it->setAction(NONE);
+				it--;
+				break;
+			}
+			case DEL: {
+				//std::cout << " deleteVoisin \n";
+				deleteRoute(&route,true);
+				mRouteList.erase(it);
+				it--;
+
+
+				break;
+			}
+			case UPD: {
+				updateRoute(&route,true);
+				it->setAction(NONE);
+				//std::cout << " updVoisin \n";
+				break;
+			}
+
+			case NONE: {
+				//std::cout << " noneVoisin\n";
+				break;
+			}
+
+			default: {
+				std::cout << "Erreur Voisin : Action non définie!" << std::endl;
+				break;
+			}
+
+			}
+
+		}
+
+		noeud->setDestTable(mRouteList);
 	noeud->releaseSystem();
 }
 
