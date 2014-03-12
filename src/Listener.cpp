@@ -144,7 +144,7 @@ void Listener::listenSocket() {
 				// reserved zone
 				temp += 2;
 
-				uint16_t nb = (messageSize - 4) / 16;
+				uint16_t nb = (messageSize - 28) / 16;
 				uint16_t i = 0;
 				for (; i < nb; i++) {
 					IPv6* currentV6 = new IPv6(*(unsigned short*) (temp + 8),
@@ -163,8 +163,20 @@ void Listener::listenSocket() {
 			} else if (messageType == TC_MESSAGE) {
 				(*(TC*) msg).printData();
 			}
+			
+			// P() du producteur (initialisé a MAX_LENGHT)
+			sem_prod.wait();
+
+			//Bloque accès a la liste
+			mProtectList.lock();
+			//si + de 10 elem dans la liste on produit rien
 
 			receptionMsg(msg);
+			
+			mProtectList.unlock();
+
+			// V() du conso
+			mSem_cons.post();
 
 		}
 	} catch (std::exception& e) {
@@ -178,9 +190,22 @@ void Listener::receptionMsg(Message* msg) {
 }
 
 Message Listener::getMsg() {
+	// P() du conso
+	mSem_cons.wait();
+
+	//bloque la liste
+	mProtectList.lock();
+	
 	std::list<Message>::iterator it=mListMsg.begin();
 	Message msg = *it;
 	mListMsg.erase(it);
+	
+	// libère la liste
+	mProtectList.unlock();
+
+	// V() du prod
+	mSem_prod.post();
+
 	return msg;
 }
 
