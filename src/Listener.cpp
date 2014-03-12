@@ -189,15 +189,15 @@ void Listener::receptionMsg(Message* msg) {
 	mListMsg.push_back(*msg);
 }
 
-Message Listener::getMsg() {
+Message* Listener::getMsg() {
 	// P() du conso
 	mSem_cons.wait();
 
 	//bloque la liste
 	mProtectList.lock();
-	
-	std::list<Message>::iterator it=mListMsg.begin();
-	Message msg = *it;
+
+	Message msg = mListMsg.front();
+	mListMsg.pop_front();
 	mListMsg.erase(it);
 	
 	// libère la liste
@@ -206,6 +206,6 @@ Message Listener::getMsg() {
 	// V() du prod
 	mSem_prod.post();
 
-	return msg;
+	return &msg;
 }
 
