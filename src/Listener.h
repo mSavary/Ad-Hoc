@@ -10,7 +10,9 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <netdb.h>
-#include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include "Message.h"
 #include "Hello.h"
 #include "Tc.h"
@@ -25,6 +27,8 @@ private:
 	boost::asio::ip::udp::endpoint *mSenderEndpoint;
 	boost::asio::ip::udp::socket *mSocket;
 	std::list<Message> mListMsg;
+	boost::mutex mProtectList;
+	boost::interprocess::interprocess_semaphore mSem_prod(MAX_LENGTH), s=mSem_cons(MIN_LENGTH);
 
 public:
 	Listener();
