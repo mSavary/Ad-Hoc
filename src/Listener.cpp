@@ -1,7 +1,7 @@
 #include "Listener.h"
 
 #define HELLO_MESSAGE 1
-#define TC_MESSAGE 2
+#define Tc_MESSAGE 2
 
 Listener::~Listener() {
 	delete mIoService;
@@ -17,6 +17,8 @@ Listener::Listener() {
 				boost::asio::ip::udp::v6(), 7171);
 		this->mSocket = new boost::asio::ip::udp::socket(*this->mIoService,
 				*this->mRemoteEndpoint);
+		mSem_cons= new boost::interprocess::interprocess_semaphore(MIN_LENGTH);
+		mSem_prod= new boost::interprocess::interprocess_semaphore(MAX_LENGTH);
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
@@ -134,8 +136,8 @@ void Listener::listenSocket() {
 				}
 				msg = hMH;
 
-			} else if (messageType == TC_MESSAGE) {
-				TC* tMH = new TC(packetLength, packetSequenceNumber,
+			} else if (messageType == Tc_MESSAGE) {
+				Tc* tMH = new Tc(packetLength, packetSequenceNumber,
 						messageType, vTime, messageSize, originatorAddress,
 						timeToLive, hopCount, messageSequenceNumber);
 
@@ -160,12 +162,12 @@ void Listener::listenSocket() {
 			msg->printData();
 			if (messageType == HELLO_MESSAGE) {
 				(*(Hello*) msg).printData();
-			} else if (messageType == TC_MESSAGE) {
-				(*(TC*) msg).printData();
+			} else if (messageType == Tc_MESSAGE) {
+				(*(Tc*) msg).printData();
 			}
 			
 			// P() du producteur (initialisé a MAX_LENGHT)
-			sem_prod.wait();
+			mSem_prod->wait();
 
 			//Bloque accès a la liste
 			mProtectList.lock();
@@ -176,7 +178,7 @@ void Listener::listenSocket() {
 			mProtectList.unlock();
 
 			// V() du conso
-			mSem_cons.post();
+			mSem_cons->post();
 
 		}
 	} catch (std::exception& e) {
@@ -189,23 +191,22 @@ void Listener::receptionMsg(Message* msg) {
 	mListMsg.push_back(*msg);
 }
 
-Message* Listener::getMsg() {
+Message Listener::getMsg() {
 	// P() du conso
-	mSem_cons.wait();
+	mSem_cons->wait();
 
 	//bloque la liste
 	mProtectList.lock();
 
-	Message msg = mListMsg.front();
+	Message message = mListMsg.front();
 	mListMsg.pop_front();
-	mListMsg.erase(it);
 	
 	// libère la liste
 	mProtectList.unlock();
 
 	// V() du prod
-	mSem_prod.post();
+	mSem_prod->post();
 
-	return &msg;
+	return message;
 }
 

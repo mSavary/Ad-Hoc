@@ -428,8 +428,6 @@ std::string Node::macToIpv6() {
 }
 
 int Node::addDestTable(Route *route) {
-
-	addDestPath(route->getIpDest(), route->getMetric());
 	if (!updDestTable(route)) {
 		mDestTable.push_back(*route);
 	}
@@ -474,7 +472,7 @@ int Node::delDest(IPv6 *ip) {
 	for (std::list<Route>::iterator it = mDestTable.begin();
 			it != mDestTable.end(); it++) {
 		if (it->getIpDest()->isEgal(ip)) {
-			Route *r = it;
+			Route *r = &(*it);
 			delDest(r);
 			return 0;
 		}

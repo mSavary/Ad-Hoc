@@ -10,10 +10,6 @@
 
 #include "IPv6.h"
 
-#define NONE 0
-#define ADD 1
-#define DEL 2
-#define UPD 3
 
 class Route
 {

@@ -18,7 +18,6 @@
 #include "Tc.h"
 #include "const.h"
 
-
 class Listener {
 
 private:
@@ -28,7 +27,7 @@ private:
 	boost::asio::ip::udp::socket *mSocket;
 	std::list<Message> mListMsg;
 	boost::mutex mProtectList;
-	boost::interprocess::interprocess_semaphore mSem_prod(MAX_LENGTH), s=mSem_cons(MIN_LENGTH);
+	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons;
 
 public:
 	Listener();
@@ -47,7 +46,7 @@ public:
 	/**
 	 * Get the last message of the list, for the Controller
 	 */
-	Message* getMsg();
+	Message getMsg();
 };
 
 #endif

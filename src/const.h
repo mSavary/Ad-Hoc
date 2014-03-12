@@ -56,6 +56,20 @@
 #define MAX_LENGTH 50
 #define MIN_LENGTH 0
 
+// Semaphore et mutex
+#define MAX_LENGTH 50
+#define MIN_LENGTH 0
+
 //node
 #define HELLO_INTERVAL 2
 #define TC_INTERVAL 5
+
+//controller
+#define HELLO_TYPE 1
+#define TC_TYPE 2
+
+//route
+#define ADD 1
+#define DEL 2
+#define UPD 3
+#define NONE 0

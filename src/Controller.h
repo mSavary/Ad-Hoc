@@ -5,7 +5,6 @@
  *      Author: maxime
  */
 
-#include "Node.h"
 #include "Message.h"
 #include "Hello.h"
 #include "Tc.h"
@@ -18,12 +17,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-class Controller {
-private:
-	Node *mNode;
-	Listener *mListener;
-	RoutingTable *mRoutingTable;
-	class Destination {
+class Destination {
 	private:
 		IPv6 *mIP;
 		int mMetric;
@@ -39,6 +33,11 @@ private:
 		void run();
 		~Destination();
 	};
+class Controller {
+private:
+	Node *mNode;
+	Listener *mListener;
+	RoutingTable *mRoutingTable;
 	std::list<Destination> mDestination;
 public:
 	Controller();
