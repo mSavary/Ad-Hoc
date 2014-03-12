@@ -52,6 +52,9 @@
 //Listener
 #define PORT 698
 #define BUFF_SIZE 1280 // size in bytes
+// Semaphore et mutex
+#define MAX_LENGTH 50
+#define MIN_LENGTH 0
 
 //node
 #define HELLO_INTERVAL 2
