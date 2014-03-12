@@ -66,9 +66,9 @@ Controller::~Controller() {
 
 
 void Controller::run(){
-	mListener->listenSocket(); // dans un thread car c'est le prod
+	/*mListener->listenSocket(); // dans un thread car c'est le prod
 	while (1){
-		Message *msg = mListener->getMsg();
+		//Message *msg = mListener->getMsg();
 		int type = msg->getMessageType();
 		if(type == HELLO_TYPE){// ajouter le type de HELLO dans const.h
 			Hello* helloMsg= (Hello*)msg;
@@ -77,11 +77,11 @@ void Controller::run(){
 			Tc* tcMsg = (Tc*)msg;
 			traitementTc(tcMsg);
 		}
-	}
+	}*/
 }
 
 void Controller::traitementHello (Hello* msg){
- std::list<IPv6> listeNeighbor;
+ /*std::list<IPv6> listeNeighbor;
  listeNeighbor=msg->getNeighbors();
  for(std::list<IPv6>::iterator it=listeNeighbor.begin();it!=listeNeighbor.end();it++){
 	 //on regarde si deja dans la liste des voisin +1 ou voisin
@@ -96,7 +96,7 @@ void Controller::traitementHello (Hello* msg){
 	 } else {
 		 // ajout du voisin
 	 }
- }
+ }*/
 // regarder comment delete les neighbor ! si on a pas recu de hello de ce voisin depuis ...
 }
 
