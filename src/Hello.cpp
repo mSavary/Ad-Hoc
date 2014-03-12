@@ -140,7 +140,7 @@ int Hello::sendHello() {
 	// IPV6
 	//*(uint16_t*)(send_buf+8) = originatorAddress;
 	//On doit faire sur 16 mais comme on ne s'occupe pas des 8 premier c'est pour ça qu'on commence à 16 et non 8
-	*(uint16_t*)(send_buf+8) = 0x0000;
+	*(uint16_t*)(send_buf+8) = 0x0000;//todo entete ipv6
 	*(uint16_t*)(send_buf+8) = 0x0000;
 	*(uint16_t*)(send_buf+8) = 0x0000;
 	*(uint16_t*)(send_buf+8) = 0x0000;

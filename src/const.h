@@ -46,3 +46,13 @@
 #define MPR_COVERAGE 1
 #define MAX_JITTER HELLO_INTERVAL/4
 
+//IPv6
+#define EN_TETE_IPv6 0x2014
+
+//Listener
+#define PORT 698
+#define BUFF_SIZE 1280 // size in bytes
+
+//node
+#define HELLO_INTERVAL 2
+#define TC_INTERVAL 5

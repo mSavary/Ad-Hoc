@@ -9,9 +9,6 @@
  * 				 with all his methods.
  */
 #include "RoutingTable.h"
-#include <string>
-#include <string.h>
-#include <sstream>
 
 RoutingTable::RoutingTable() {
 }

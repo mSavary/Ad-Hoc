@@ -7,8 +7,7 @@
 
 //#ifndef NODE_H
 //#define NODE_H
-#define HELLO_INTERVAL 2
-#define TC_INTERVAL 5
+
 
 #include <iostream>
 #include <string>
@@ -22,21 +21,8 @@
 #include <boost/thread/mutex.hpp>
 #include "Route.h"
 #include "IPv6.h"
+#include "const.h"
 
-class Dest{
-private:
-	int mHops;
-	IPv6 *mIp;
-public:
-	Dest(int hop, IPv6* ip);
-	inline IPv6* getIp(){
-		return mIp;
-	}
-	inline int getHops(){
-		return mHops;
-	}
-
-};
 
 class Node {
 private:
@@ -53,7 +39,6 @@ private:
 	std::list<Route> mNeighborTable, mTwoHopNeighborTable, mDestTable;
 	std::list<IPv6> mNeighborIP, mMyMprList;
 	std::list<std::list<IPv6> > mTwoHopNeighborIP;
-	std::list<Dest> mDestPath;
 
 	/*
 	 * Private methods
@@ -79,21 +64,6 @@ private:
 	 */
 	int addTwoHopNeighborTable(Route *route);
 	int addNeighborTable(Route *route);
-
-	/**
-	 * Func addDestTable()
-	 *
-	 * @params : route is the route to add to the destTable
-	 */
-	int addDestTable(Route *route);
-
-
-
-	/**
-	 * Func addDestPath()
-	 *  	add a new Dest to mDestPath
-	 */
-	int addDestPath(IPv6 *ip,int hop);
 
 	/**
 	 * Func updDestTable
@@ -253,6 +223,13 @@ public:
 			std::string iface);
 
 	/**
+	 * Func addDestTable()
+	 *
+	 * @params : route is the route to add to the destTable
+	 */
+	int addDestTable(Route *route);
+
+	/**
 	 * Func delNeighbor
 	 *	Delete a neighbor from the mNeighborTable
 	 *
@@ -298,6 +275,7 @@ public:
 	 * 	@params: route route to del
 	 */
 	int delDest(Route *route);
+	int delDest(IPv6 *ip);
 
 };
 

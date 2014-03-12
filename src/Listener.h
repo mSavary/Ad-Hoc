@@ -5,7 +5,6 @@
 #include <list>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
-#include "Message.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -15,9 +14,9 @@
 #include "Message.h"
 #include "Hello.h"
 #include "Tc.h"
+#include "const.h"
 
-#define PORT 698
-#define BUFF_SIZE 1280 // size in bytes
+
 class Listener {
 
 private:

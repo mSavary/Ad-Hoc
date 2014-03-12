@@ -4,8 +4,12 @@
 #include <stdint.h>
 #include <netinet/in.h>
 #include <iostream>
-
+#include <sys/socket.h>
+#include <fcntl.h>
 #include <list>
+#include <math.h>
+#include <cstdlib>
+#include <string.h>
 #include "IPv6.h"
 
 class Message{

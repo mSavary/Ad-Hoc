@@ -18,13 +18,28 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-
-
-
 class Controller {
 private:
 	Node *mNode;
 	Listener *mListener;
+	RoutingTable *mRoutingTable;
+	class Destination {
+	private:
+		IPv6 *mIP;
+		int mMetric;
+		int mState;
+		boost::thread *mThreadRun;
+		boost::asio::io_service *mIo;
+		boost::asio::deadline_timer *mTimer;
+		bool mDel;
+		void changeState();
+	public:
+		Destination(IPv6 *ip, int metric);
+		void resetTimer();
+		void run();
+		~Destination();
+	};
+	std::list<Destination> mDestination;
 public:
 	Controller();
 	virtual ~Controller();

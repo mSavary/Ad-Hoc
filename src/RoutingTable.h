@@ -15,6 +15,9 @@
 #include <stdlib.h>
 #include <list>
 #include <stdio.h>
+#include <string>
+#include <string.h>
+#include <sstream>
 
 class RoutingTable{
 

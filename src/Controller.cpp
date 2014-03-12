@@ -7,16 +7,63 @@
 
 #include "Controller.h"
 
+void Destination::changeState() {
+	if(mDel){
+	}
+	mDel=true;
+}
+
+void Destination::run(){
+	mIo->run();
+}
+
+Destination::Destination(IPv6 *ip, int metric) {
+	// TODO Auto-generated constructor stub
+	mIP = ip;
+	mMetric = metric;
+	mState = NONE;
+	mDel = true;
+	mIo = new boost::asio::io_service();
+	mTimer = new boost::asio::deadline_timer(*mIo,
+			boost::posix_time::seconds(10));
+	mTimer->async_wait(boost::bind(&Destination::changeState, this));
+	mThreadRun = new boost::thread(&Destination::run,this);
+}
+
+Destination::~Destination() {
+	// TODO Auto-generated destructor stub
+	delete mIP;
+}
+
+void Destination::resetTimer() {
+	//std::cout<<" timer reset "<<mMetric<<" expire at : "<<mTimer->expires_at()<<std::endl;
+	//if(mTimer->expires_at()<)
+	mDel=false;
+	mTimer->cancel();
+	mTimer->expires_from_now(boost::posix_time::seconds(10));
+	mTimer->async_wait(boost::bind(&Destination::changeState, this));
+	//threadRun = new boost::thread(boost::bind(&boost::asio::io_service::run, mIo));
+	//del = true;
+
+}
+
+
+
 Controller::Controller() {
 	// TODO Auto-generated constructor stub
 	mNode= new Node();
 	mListener = new Listener ();
+	mRoutingTable = new RoutingTable();
 
 }
 
 Controller::~Controller() {
 	// TODO Auto-generated destructor stub
+	delete mNode;
+	delete mListener;
+	delete mRoutingTable;
 }
+
 
 void Controller::run(){
 	mListener->listenSocket(); // dans un thread car c'est le prod
@@ -56,3 +103,5 @@ void Controller::traitementHello (Hello* msg){
 void Controller::traitementTc (Tc* msg){
 
 }
+
+

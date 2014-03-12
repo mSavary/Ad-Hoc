@@ -9,7 +9,7 @@
 #define IPV6_H_
 #include <sstream>
 #include <list>
-#define EN_TETE_IPv6 0x2014
+#include "const.h"
 
 class IPv6
 {

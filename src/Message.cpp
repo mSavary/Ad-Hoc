@@ -1,14 +1,4 @@
 #include "Message.h"
-#include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <fcntl.h>
-#include <list>
-#include <math.h>
-#include <cstdlib>
-#include "headers.h"
-#include <string.h>
-#include "IPv6.h"
 
 
 using namespace std;
@@ -97,7 +87,7 @@ void Message::setOriginatorAddress(IPv6* n) {
 }
 
 void Message::setTimeToLive(uint8_t n) {
-  mTimeToLive;
+  mTimeToLive = n;
 }
 
 void Message::setHopCount(uint8_t n) {
