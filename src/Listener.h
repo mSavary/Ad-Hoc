@@ -47,7 +47,7 @@ public:
 	/**
 	 * Get the last message of the list, for the Controller
 	 */
-	Message getMsg();
+	Message* getMsg();
 };
 
 #endif
