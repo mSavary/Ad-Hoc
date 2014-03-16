@@ -27,6 +27,11 @@
 class Node {
 private:
 
+
+	//TODO AdvertisedNeighbor : list IPv6
+	//todo func addAdvertise : ajoute un advertise neigbor
+	//todo fun delAdvertise(ip) : parcour la liste des advertise si trouve la meme que ip alors on la delete
+
 	/*
 	 * *attributes
 	 */
@@ -37,7 +42,7 @@ private:
 	boost::thread mTimerHello, mTimerTc;
 	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable,mMutexSystem,mMutexDestTable;
 	std::list<Route> mNeighborTable, mTwoHopNeighborTable, mDestTable;
-	std::list<IPv6> mNeighborIP, mMyMprList;
+	std::list<IPv6> mNeighborIP, mMyMprList, mAdvertisedNeighborList;
 	std::list<std::list<IPv6> > mTwoHopNeighborIP;
 
 	/*
@@ -228,6 +233,23 @@ public:
 	 * @params : route is the route to add to the destTable
 	 */
 	int addDestTable(Route *route);
+
+	/**
+	 * Func addAdvertisedNeighbor
+	 * add the IP of neighbor which choose me as MPR
+	 *
+	 *@params : ip of the neighbor
+	 */
+	int addAdvertisedNeighbor(IPv6* ip);
+
+
+	/**
+	 * Func delAdvertisedNeighbor
+	 * delete from the advertisedlist a neighbor which erase me from his mpr
+	 *
+	 * @params : ip of the neighbor
+	 */
+	int delAdvertisedNeighbor(IPv6* ip);
 
 	/**
 	 * Func delNeighbor

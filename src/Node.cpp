@@ -260,6 +260,31 @@ int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
 	return addTwoHopNeighbor(route);
 }
 
+int Node::addAdvertisedNeighbor(IPv6* ip){
+	mMutexIP.lock();
+	mAdvertisedNeighborList.push_back(*ip);
+	imMpr();
+	mMutexIP.unlock();
+	return 1;
+}
+
+int Node::delAdvertisedNeighbor(IPv6* ip){
+	mMutexIP.lock();
+	for (std::list<IPv6>::iterator it = mAdvertisedNeighborList.begin();it!=mAdvertisedNeighborList.end();it++){
+		if((*it).isEgal(ip)){
+			mAdvertisedNeighborList.erase(it);
+			if(mAdvertisedNeighborList.size()==0){
+				mMpr=false;
+			}
+			mMutexIP.unlock();
+			return 1;
+		}
+	}
+	mMutexIP.unlock();
+	return 0;
+}
+
+
 int Node::delNeighbor(IPv6* ipToDelete) {
 
 	/*
@@ -288,6 +313,7 @@ int Node::delNeighbor(IPv6* ipToDelete) {
 			selectMpr(mTwoHopNeighborIP, mNeighborIP);
 			unlock = true;
 			mMutexIP.unlock();
+			delAdvertisedNeighbor(ipToDelete);
 			return 0;
 		}
 	}
