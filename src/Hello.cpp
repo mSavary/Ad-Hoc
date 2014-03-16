@@ -41,9 +41,9 @@ void HelloNeighborList::setNeighborsAddrList(IPv6* n) {
 Hello::Hello(
 	    uint16_t packetLength,
 	    uint16_t  packetSequenceNumber,
-	    uint8_t messageType,  
+	    uint8_t messageType,
 	    uint8_t vTime,
-	    uint16_t messageSize, 
+	    uint16_t messageSize,
 	    IPv6 * originatorAddress,
 	    uint8_t timeToLive,
 	    uint8_t hopCount,
@@ -52,9 +52,9 @@ Hello::Hello(
   Message(
 	  packetLength,
 	  packetSequenceNumber,
-	  messageType, 
+	  messageType,
 	  vTime,
-	  messageSize, 
+	  messageSize,
 	  originatorAddress,
 	  timeToLive,
 	  hopCount,
@@ -97,12 +97,12 @@ void Hello::setNeighbors(HelloNeighborList* n) {
 void Hello::printData(){
   std::cout << "Htime = "; std::cout << (int)mHTime << std::endl;
   std::cout << "Willingness = "; std::cout << (int)mWillingness << std::endl;
-	
+
   std::list<HelloNeighborList> liste = mNeighbors;
   for (std::list<HelloNeighborList>::iterator ipv = liste.begin(); ipv != liste.end(); ipv++) {
     std::cout<<" LINK CODE :"<<(int)ipv->getLinkCode()<<std::endl;
     std::list<IPv6> ip = ipv->getNeighborsAddrList();
-		
+
     for(std::list<IPv6>::iterator it = ip.begin();it!=ip.end();it++){
       std::cout<<" IP : "<<it->toChar()<<std::endl;
     }
@@ -119,8 +119,8 @@ int Hello::sendHello() {
 	send_buf = (char*)malloc(sizeof(char)*BUFF_SIZE);
 
 	//je dois remplir toutes les données de l'entete du msg cad PacketLenght PacketsequenceNumber messagetype Vtime Massage Size Originator Address TTL hopcount Messagesequence number
-	
-	
+
+
 
 	//packetSequenceNumber
 	//packetSequenceNumber = (packetSequenceNumber++)%(0xFFFF); //2o
@@ -144,7 +144,7 @@ int Hello::sendHello() {
 	*(uint16_t*)(send_buf+8) = 0x0000;
 	*(uint16_t*)(send_buf+8) = 0x0000;
 	*(uint16_t*)(send_buf+8) = 0x0000;
-  	*(uint16_t*)(send_buf+16) = mOriginatorAddress->getScope(4); 
+  	*(uint16_t*)(send_buf+16) = mOriginatorAddress->getScope(4);
 	// *(send_buf+17) =0xF2;
 	*(uint16_t*)(send_buf+18) = mOriginatorAddress->getScope(5);
 	// *(send_buf+19) =0xF4;
@@ -159,24 +159,24 @@ int Hello::sendHello() {
   	//HOP COUNT
 	*(send_buf+25) = mHopCount;
   	//*(send_buf+25) = 0x3C;
-  	//Message Sequence Number 
+  	//Message Sequence Number
 	*(uint16_t*)(send_buf+26) = mMessageSequenceNumber;
   	//*(uint16_t*)(send_buf+26) = 0x4444;
 
 
 	//HELLO MESSAGE :
- 
+
 	//RESERVED
 	*(uint16_t*)(send_buf+28) = mReserved;
-	// HTIME 
+	// HTIME
 	*(send_buf+30) = mHTime;
 	// WillingNess
 	*(send_buf+31) = mWillingness;
-	
+
 	int c = 32;
-	
+
 	uint16_t helloSize = 0;
-	
+
 	for (std::list<HelloNeighborList>::iterator iv = mNeighbors.begin(); iv != mNeighbors.end(); iv++) {
 		// link code
 		*(uint8_t*)(send_buf+c) = iv->getLinkCode();
@@ -187,8 +187,8 @@ int Hello::sendHello() {
 		helloSize += iv->getLinkMessageSize();
 		c += 2;
 
-		// IPV6  :  Neighbor Interface Address 
-	
+		// IPV6  :  Neighbor Interface Address
+
 		std::list<IPv6> ip = iv->getNeighborsAddrList();
 		c += 2;
 		for(std::list<IPv6>::iterator it = ip.begin();it!=ip.end();it++){
@@ -202,15 +202,14 @@ int Hello::sendHello() {
 			*(uint16_t*)(send_buf+c) = it->getScope(7);
 			c += 2;
     	}
-    	
  	}
- 	
+
  	helloSize += 4;
 	mMessageSize = helloSize + 24;
 	mPacketLength = mMessageSize + 4; // 2o
-	
+
 	/*A la fin car on a besoin du parcours des itérateurs pour connaître certaines données donc au lieu que le début soit éparpillé en haut et en bas, tout a été mis en bas.
-	*/	
+	*/
 //packetHeader
 	// packetLength
 	*(uint16_t*)send_buf = mPacketLength;
@@ -218,7 +217,7 @@ int Hello::sendHello() {
   	// PacketSequenceNumber
  	*(uint16_t*)(send_buf+2) = mPacketSequenceNumber;
   	//*(uint16_t*)(send_buf+2) = 0xB0C3;
-  	
+
   	//messageHeader
 	// messageType
  	*(send_buf+4) = mMessageType;
@@ -229,11 +228,11 @@ int Hello::sendHello() {
 	// messageSize
 	*(uint16_t*)(send_buf+6) = mMessageSize;
   	//*(uint16_t*)(send_buf+6) = (uint16_t)0x42;
-	
+
 
 	std::string container (send_buf, c);
 	io_service = new  boost::asio::io_service();
-	receiver_endpoint = new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 7171); 
+	receiver_endpoint = new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 7171);
 	sender_endpoint = new boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 2050);
 	socket = new boost::asio::ip::udp::socket(*io_service,*sender_endpoint);
 	socket->send_to(boost::asio::buffer(container),*receiver_endpoint);
