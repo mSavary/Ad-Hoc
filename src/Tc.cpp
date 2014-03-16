@@ -7,10 +7,10 @@
 #define b 6
 
 using namespace std;
-TC::TC() {
+Tc::Tc() {
 }
 
-TC::TC(
+Tc::Tc(
        uint16_t packetLength,
        uint16_t  packetSequenceNumber,
        uint8_t messageType,
@@ -33,37 +33,37 @@ Message(packetLength,
 	)
 {}// end construct
 
-uint16_t TC::getANSN() 
+uint16_t Tc::getANSN()
 {
   	return mANSN;
 }
 
-uint16_t TC::getReserved() {
+uint16_t Tc::getReserved() {
 	return mReserved;
 }
 
-void TC::setReserved(uint16_t res)  {
+void Tc::setReserved(uint16_t res)  {
 	mReserved = res;
 }
 
-std::list<IPv6> TC::getAdvertisedNeighborMainAddress()  {
+std::list<IPv6> Tc::getAdvertisedNeighborMainAddress()  {
   	return mAdvertisedNeighborMainAddress;
 }
 
-void TC::setANSN(uint16_t n)  {
+void Tc::setANSN(uint16_t n)  {
   	mANSN = n;
 }
 
-void TC::setAdvertisedNeighborMainAddress(short n, short o, short p, short q) {
+void Tc::setAdvertisedNeighborMainAddress(short n, short o, short p, short q) {
   	IPv6* temp = new IPv6(n, o, p, q);
   	mAdvertisedNeighborMainAddress.push_back(*temp);
 }
 
-void TC::setAdvertisedNeighborMainAddress(IPv6* n)  {
+void Tc::setAdvertisedNeighborMainAddress(IPv6* n)  {
   	mAdvertisedNeighborMainAddress.push_back(*n);
 }
 
-void TC::printData() {
+void Tc::printData() {
 	std::cout << "ANSN = "; 
 	std::cout << (int)mANSN << std::endl;
 	
@@ -74,7 +74,7 @@ void TC::printData() {
     }
 }
 
-int TC::sendTc() {
+int Tc::sendTc() {
 	boost::asio::io_service *io_service;
   	boost::asio::ip::udp::endpoint *receiver_endpoint;
   	boost::asio::ip::udp::endpoint *sender_endpoint;
@@ -93,7 +93,7 @@ int TC::sendTc() {
   	
 
 	// IPV6
-  	*(uint16_t*)(send_buf+8) = 0x0000;
+  	*(uint16_t*)(send_buf+8) = 0x0000;// todo entete IPV6
 	*(uint16_t*)(send_buf+8) = 0x0000;
 	*(uint16_t*)(send_buf+8) = 0x0000;
 	*(uint16_t*)(send_buf+8) = 0x0000;
@@ -113,7 +113,7 @@ int TC::sendTc() {
   	//Message Sequence Number 
   	*(uint16_t*)(send_buf+26) = mMessageSequenceNumber;
   	
-	//TC MESSAGE : 
+	//Tc MESSAGE :
 	// ANSN
 	*(uint16_t*)(send_buf+28) = this->getANSN();
 	//+2 pour le reserved
@@ -167,7 +167,7 @@ int TC::sendTc() {
 	
 	if (mAdvertisedNeighborMainAddress.size() > 0)//IMPORTANT retourne 1 si la liste des voisins n'est pas vide ! Besoin de rappeler la fonction send !
 	{
-		return 1;
+		sendTc();
 	}
 
 	else //liste des voisins vide
