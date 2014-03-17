@@ -24,11 +24,11 @@ class RoutingTable{
 public:
 	RoutingTable(); // Initializes the Application Routing Table.
 
-	void systemTableUpdate(Node *noeud);
+	void systemTableUpdate(Node* noeud);
 
-	inline std::list<Route> getRouteList(){ // returns the private attribute routeList containing all the routes
+	/*inline std::list<Route> getRouteList(){ // returns the private attribute routeList containing all the routes
 			return mRouteList;
-		}
+		}*/
 
 private:
 	std::list<Route> mRouteList;

@@ -15,6 +15,10 @@
 #define SYM_NEIGH 1
 #define MPR_NEIGH 2
 
+// LINK CODE VALUES //todo mettre les valeurs exacte
+#define LINK_CODE_MPR 01
+#define LINK_CODE_NGHB 10
+
 // LINK Hysteresis
 #define HYST_THRESHOLD_HIGH 0.8
 #define HYST_THRESHOLD_LOW 0.3

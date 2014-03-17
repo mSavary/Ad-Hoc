@@ -276,6 +276,7 @@ public:
 
 	int delTwoHopNeighbor(Route* route);
 	int delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete);
+	int delTwoHopNeighbor(IPv6* ipToDelete);
 
 	/**
 	 * Func macToIPv6

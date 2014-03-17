@@ -28,6 +28,8 @@ void Listener::listenSocket() {
 	boost::system::error_code error;
 	try {
 		for (;;) {
+			// P() du producteur (initialisé a MAX_LENGHT)
+			mSem_prod->wait();
 			boost::array<char, BUFF_SIZE> recvBuf;
 			size_t len = mSocket->receive_from(boost::asio::buffer(recvBuf),
 					*mRemoteEndpoint, 0, error);
@@ -103,9 +105,9 @@ void Listener::listenSocket() {
 
 				while (compt < messageSize - 28) {
 
-					HelloNeighborList* hNL = new HelloNeighborList();
-
-					hNL->setLinkCode((uint8_t) *temp);
+					//
+					uint8_t linkCode = (uint8_t) *temp;
+					//hNL->setLinkCode((uint8_t) *temp);
 					++temp;
 					//hNL->reserved = (uint8_t)*temp;
 					++temp;
@@ -115,7 +117,7 @@ void Listener::listenSocket() {
 
 					int nb = (linkMessageSize - 4) / 16;
 					int i = 0;
-
+					std::list<IPv6> listIp;
 					for (; i < nb; i++) {
 						IPv6* currentV6 = new IPv6(
 								*(unsigned short*) (temp + 8),
@@ -126,9 +128,9 @@ void Listener::listenSocket() {
 
 						//hMH->neighbors->neighborsAddrList.push_front(*currentV6);
 						//hNL->neighborsAddrList.emplace_back(*currentV6);
-						hNL->setNeighborsAddrList(currentV6);
+						listIp.push_back(*currentV6);
 					}
-
+					HelloNeighborList* hNL = new HelloNeighborList(linkCode,linkMessageSize,listIp);
 					//compt+=hMH->neighbors->linkMessageSize;
 					compt += linkMessageSize;
 
@@ -159,15 +161,12 @@ void Listener::listenSocket() {
 				msg = (Message*) tMH;
 			}
 
-			msg->printData();
+			/*msg->printData();
 			if (messageType == HELLO_MESSAGE) {
 				(*(Hello*) msg).printData();
 			} else if (messageType == Tc_MESSAGE) {
 				(*(Tc*) msg).printData();
-			}
-			
-			// P() du producteur (initialisé a MAX_LENGHT)
-			mSem_prod->wait();
+			}*/
 
 			//Bloque accès a la liste
 			mProtectList.lock();

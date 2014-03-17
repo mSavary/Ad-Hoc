@@ -16,18 +16,26 @@ Node::~Node() {
 }
 
 void Node::sendHello() {
-
-	sleep(HELLO_INTERVAL);
+	std::list<IPv6> nghb;
 	mMutexIP.lock();
-	std::cout << "\n***** ENVOI HELLO *****";
-	/*std::cout << "\n NEIGHBOR LISTE \n****************" << std::endl;
-	 for (std::list<IPv6>::iterator ipv = mNeighborIP.begin();
-	 ipv != mNeighborIP.end(); ipv++) {
-	 std::cout << "" << ipv->toChar() << "" << std::endl;
-	 }
-	 std::cout << "******************\n";*/
+	std::list<IPv6> mpr= mMyMprList;
+	for (std::list<IPv6>::iterator it1 = mNeighborIP.begin();
+			it1 != mNeighborIP.end(); it1++) {
+		bool find = false;
+		for (std::list<IPv6>::iterator it2 = mMyMprList.begin();
+				it2 != mMyMprList.end(); it2++) {
+			if (!it2->isEgal(&(*it1))) {
+				find = true;
+			}
+		}
+		if (!find) {
+			nghb.push_back(*it1);
+		}
+	}
 	mMutexIP.unlock();
-	sendHello();
+	sleep(HELLO_INTERVAL);
+	Hello *msg= new Hello(1,HELLO_TYPE,mMyIp,0,1,nghb,mpr);
+	msg->sendHello();
 	/* appeler fonctions de construction et d'envoi de message Hello */
 }
 
@@ -215,7 +223,6 @@ int Node::addTwoHopNeighborTable(Route *route) {
 		for (std::list<Route>::iterator it = mNeighborTable.begin();
 				it != mNeighborTable.end(); ++it) {
 			if (it->getIpDest()->isEgal(route->getIpDest())) {
-				std::cout << "ERROR : Dest is a Neighbor" << std::endl;
 				mMutexNeighborTable.unlock();
 				mMutexTwoHopTable.unlock();
 				return 4;
@@ -241,7 +248,8 @@ int Node::addTwoHopNeighborTable(Route *route) {
 
 int Node::addTwoHopNeighbor(Route* route) {
 	std::list<IPv6> TwoHop;
-	if (addTwoHopNeighborTable(route) == 0) {
+	int result = addTwoHopNeighborTable(route);
+	if (result == 0) {
 		TwoHop.push_back(*route->getIpDest());
 		TwoHop.push_back(*route->getNextHop());
 		mMutexIP.lock();
@@ -249,6 +257,8 @@ int Node::addTwoHopNeighbor(Route* route) {
 		clearMpr();
 		selectMpr(mTwoHopNeighborIP, mNeighborIP);
 		mMutexIP.unlock();
+		return 0;
+	} else if (result == 4) {
 		return 0;
 	}
 	std::cout << " ERROR : Adding TwoHop route" << std::endl;
@@ -260,21 +270,29 @@ int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
 	return addTwoHopNeighbor(route);
 }
 
-int Node::addAdvertisedNeighbor(IPv6* ip){
+int Node::addAdvertisedNeighbor(IPv6* ip) {
 	mMutexIP.lock();
+	for (std::list<IPv6>::iterator it = mAdvertisedNeighborList.begin();
+			it != mAdvertisedNeighborList.end(); it++) {
+		if (it->isEgal(ip)) {
+			mMutexIP.unlock();
+			return 0;
+		}
+	}
 	mAdvertisedNeighborList.push_back(*ip);
 	imMpr();
 	mMutexIP.unlock();
 	return 1;
 }
 
-int Node::delAdvertisedNeighbor(IPv6* ip){
+int Node::delAdvertisedNeighbor(IPv6* ip) {
 	mMutexIP.lock();
-	for (std::list<IPv6>::iterator it = mAdvertisedNeighborList.begin();it!=mAdvertisedNeighborList.end();it++){
-		if((*it).isEgal(ip)){
+	for (std::list<IPv6>::iterator it = mAdvertisedNeighborList.begin();
+			it != mAdvertisedNeighborList.end(); it++) {
+		if ((*it).isEgal(ip)) {
 			mAdvertisedNeighborList.erase(it);
-			if(mAdvertisedNeighborList.size()==0){
-				mMpr=false;
+			if (mAdvertisedNeighborList.size() == 0) {
+				mMpr = false;
 			}
 			mMutexIP.unlock();
 			return 1;
@@ -283,7 +301,6 @@ int Node::delAdvertisedNeighbor(IPv6* ip){
 	mMutexIP.unlock();
 	return 0;
 }
-
 
 int Node::delNeighbor(IPv6* ipToDelete) {
 
@@ -326,6 +343,19 @@ int Node::delNeighbor(IPv6* ipToDelete) {
 int Node::delNeighbor(Route* route) {
 	IPv6* ip = route->getIpDest();
 	return delNeighbor(ip);
+}
+
+int Node::delTwoHopNeighbor(IPv6* ipToDelete) {
+	mMutexIP.lock();
+	for (std::list<std::list<IPv6> >::iterator it = mTwoHopNeighborIP.begin();
+			it != mTwoHopNeighborIP.end(); ++it) {
+		if ((it->front()).isEgal(ipToDelete)) {
+			IPv6 nextHop = it->back();
+			delTwoHopNeighbor(ipToDelete, &nextHop);
+			return 0;
+		}
+	}
+	return 1;
 }
 
 int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
@@ -422,7 +452,7 @@ std::string Node::macToIpv6() {
 	std::string IPv6;
 	if (result.empty()) {
 		std::cout << "MAC adress not found\n";
-		//todo ; retourner erreur
+		//todo erreur
 	}
 
 	// reformat to IPv6 notation

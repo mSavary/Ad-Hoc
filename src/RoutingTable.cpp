@@ -64,7 +64,6 @@ void RoutingTable::systemTableUpdate(Node *noeud) {
 	//std::cout << tableNeighbor.size() << "test\n";
 	//mRouteList.clear();
 	noeud->lockSystem();
-	//noeud->lockSystem();
 	mRouteList = noeud->getNeighborTable();
 	for (std::list<Route>::iterator it = mRouteList.begin();
 			it != mRouteList.end(); it++) {
@@ -111,10 +110,6 @@ void RoutingTable::systemTableUpdate(Node *noeud) {
 	mRouteList.clear();
 	mRouteList = noeud->getTwoHopNeighborTable();
 
-	/*for (std::list<Route>::iterator it = mRouteList.begin();
-	 it != mRouteList.end(); it++) {
-	 std::cout << "IP  ! " << it->getIpDest()->toChar() << std::endl;
-	 }*/
 
 	for (std::list<Route>::iterator it = mRouteList.begin();
 			it != mRouteList.end(); it++) {

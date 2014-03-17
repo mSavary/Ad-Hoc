@@ -17,36 +17,32 @@
 #include <boost/asio.hpp>
 #include "Listener.h"
 
-
 using namespace std;
 using boost::asio::ip::udp;
 
-class Tc : public Message {
- 	private :
-	  	uint16_t mANSN;
-		uint16_t mReserved ;
-	  	std::list<IPv6> mAdvertisedNeighborMainAddress;
-  	
- 	public :	
-		Tc();
-		Tc(uint16_t packetLength,
-		   	uint16_t  packetSequenceNumber,
-			uint8_t messageType, 
-		   	uint8_t vTime,
-			uint16_t messageSize, 
-		   	IPv6 * originatorAdress,
-		   	uint8_t timeToLive,
-		   	uint8_t hopCount,
-		   	uint16_t messageSequenceNumber);
+class Tc: public Message {
+private:
+	uint16_t mANSN;
+	uint16_t mReserved;
+	std::list<IPv6> mAdvertisedNeighborMainAddress;
 
-		uint16_t getANSN();
-		uint16_t getReserved();
-		void setReserved(uint16_t res);
-	  	std::list<IPv6> getAdvertisedNeighborMainAddress();
-	  	void setANSN(uint16_t n);
-	  	void setAdvertisedNeighborMainAddress(short n, short o, short p, short q);
-	  	void setAdvertisedNeighborMainAddress(IPv6* n);
-		void printData();
-		int sendTc();
+public:
+	Tc(uint16_t packetSequenceNumber, uint8_t messageType,
+			IPv6 * originatorAddress, uint8_t hopCount,
+			uint16_t messageSequenceNumber, std::list<IPv6> advertisedList);
+	Tc(uint16_t packetLength, uint16_t packetSequenceNumber,
+			uint8_t messageType, uint8_t vTime, uint16_t messageSize,
+			IPv6 * originatorAdress, uint8_t timeToLive, uint8_t hopCount,
+			uint16_t messageSequenceNumber);
+
+	uint16_t getANSN();
+	uint16_t getReserved();
+	void setReserved(uint16_t res);
+	std::list<IPv6> getAdvertisedNeighborMainAddress();
+	void setANSN(uint16_t n);
+	void setAdvertisedNeighborMainAddress(short n, short o, short p, short q);
+	void setAdvertisedNeighborMainAddress(IPv6* n);
+	void printData();
+	int sendTc();
 };
 #endif

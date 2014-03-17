@@ -7,52 +7,10 @@
 
 #include "Controller.h"
 
-void Destination::changeState() {
-	if(mDel){
-	}
-	mDel=true;
-}
-
-void Destination::run(){
-	mIo->run();
-}
-
-Destination::Destination(IPv6 *ip, int metric) {
-	// TODO Auto-generated constructor stub
-	mIP = ip;
-	mMetric = metric;
-	mState = NONE;
-	mDel = true;
-	mIo = new boost::asio::io_service();
-	mTimer = new boost::asio::deadline_timer(*mIo,
-			boost::posix_time::seconds(10));
-	mTimer->async_wait(boost::bind(&Destination::changeState, this));
-	mThreadRun = new boost::thread(&Destination::run,this);
-}
-
-Destination::~Destination() {
-	// TODO Auto-generated destructor stub
-	delete mIP;
-}
-
-void Destination::resetTimer() {
-	//std::cout<<" timer reset "<<mMetric<<" expire at : "<<mTimer->expires_at()<<std::endl;
-	//if(mTimer->expires_at()<)
-	mDel=false;
-	mTimer->cancel();
-	mTimer->expires_from_now(boost::posix_time::seconds(10));
-	mTimer->async_wait(boost::bind(&Destination::changeState, this));
-	//threadRun = new boost::thread(boost::bind(&boost::asio::io_service::run, mIo));
-	//del = true;
-
-}
-
-
-
 Controller::Controller() {
 	// TODO Auto-generated constructor stub
-	mNode= new Node();
-	mListener = new Listener ();
+	mNode = new Node();
+	mListener = new Listener();
 	mRoutingTable = new RoutingTable();
 
 }
@@ -64,44 +22,79 @@ Controller::~Controller() {
 	delete mRoutingTable;
 }
 
-
-void Controller::run(){
+void Controller::run() {
 	/*mListener->listenSocket(); // dans un thread car c'est le prod
-	while (1){
-		//Message *msg = mListener->getMsg();
-		int type = msg->getMessageType();
-		if(type == HELLO_TYPE){// ajouter le type de HELLO dans const.h
-			Hello* helloMsg= (Hello*)msg;
-			traitementHello(helloMsg);
-		} else if (type == TC_TYPE){// TC_TYPE a ajouter dans const.h
-			Tc* tcMsg = (Tc*)msg;
-			traitementTc(tcMsg);
-		}
-	}*/
-}
-
-void Controller::traitementHello (Hello* msg){
- /*std::list<IPv6> listeNeighbor;
- listeNeighbor=msg->getNeighbors();
- for(std::list<IPv6>::iterator it=listeNeighbor.begin();it!=listeNeighbor.end();it++){
-	 //on regarde si deja dans la liste des voisin +1 ou voisin
-	 //si pas dans une des 2 liste on ajoute en voisin +1
-	 // + verifié les voisin +1 a supprim si ( voir RFC ) autant de temps passé
- }
- IPv6 *ipNeighbor = msg->getOriginatorAddress();
- for(std::list<IPv6>::iterator it= mNode->getNeighborIP().begin();it!=mNode->getNeighborIP().end();it++){
-	 IPv6* ipToComp = &*it;
-	 if(ipNeighbor->isEgal(ipToComp)){
-		 // redemarer le timer
-	 } else {
-		 // ajout du voisin
+	 while (1){
+	 //Message *msg = mListener->getMsg();
+	 int type = msg->getMessageType();
+	 if(type == HELLO_TYPE){// ajouter le type de HELLO dans const.h
+	 Hello* helloMsg= (Hello*)msg;
+	 traitementHello(helloMsg);
+	 } else if (type == TC_TYPE){// TC_TYPE a ajouter dans const.h
+	 Tc* tcMsg = (Tc*)msg;
+	 traitementTc(tcMsg);
 	 }
- }*/
-// regarder comment delete les neighbor ! si on a pas recu de hello de ce voisin depuis ...
+	 }*/
 }
 
-void Controller::traitementTc (Tc* msg){
+void Controller::traitementHello(Hello* msg) {
+	IPv6* origIp = msg->getOriginatorAddress();
+	std::list<IPv6> listNghbNode = mNode->getNeighborIP();
+	bool find = false;
+	for (std::list<IPv6>::iterator itListNghbNode = listNghbNode.begin();
+			itListNghbNode != listNghbNode.end(); itListNghbNode++) {
+		if ((*itListNghbNode).isEgal(origIp)) {
+			find = true;
+			for (std::list<Destination>::iterator itDest = mDestination.begin();
+					itDest != mDestination.end(); itDest++) {
+				if (origIp->isEgal(itDest->getIp())) {
+					itDest->resetTimer();
+					break;
+				}
+			}
+			break;
+		}
+	}
+	if (!find) {
+		mNode->addNeighbor(origIp, origIp, 1, mNode->getInterface());
+		Destination *dest = new Destination(origIp, 1);
+		mDestination.push_back(*dest);
+	}
+//fin traitement originator ADDRESSE
 
+	std::list<HelloNeighborList> listNeighbor = msg->getNeighbors();
+
+	for (std::list<HelloNeighborList>::iterator itListNeighbor =
+			listNeighbor.begin(); itListNeighbor != listNeighbor.end();
+			itListNeighbor++) {
+		if ((*itListNeighbor).getLinkCode() == LINK_CODE_MPR) {
+			std::list<IPv6> listIp = (*itListNeighbor).getNeighborsAddrList();
+			bool advertise = false;
+			for (std::list<IPv6>::iterator itIp = listIp.begin();
+					itIp != listIp.end(); itIp++) {
+				if (itIp->isEgal(mNode->getMyIp())) {
+					advertise = true;
+					mNode->addAdvertisedNeighbor(origIp);
+				} else{
+					mNode->addTwoHopNeighbor(&(*itIp),origIp,2,mNode->getInterface());
+				}
+			}
+			if (!advertise) {
+				mNode->delAdvertisedNeighbor(origIp);
+			}
+		} else if ((*itListNeighbor).getLinkCode() == LINK_CODE_NGHB) {
+			std::list<IPv6> listIp = (*itListNeighbor).getNeighborsAddrList();
+			for (std::list<IPv6>::iterator itIp = listIp.begin();
+					itIp != listIp.end(); itIp++) {
+				mNode->addTwoHopNeighbor(&(*itIp),origIp,2,mNode->getInterface());
+			}
+		} else{
+			std::cout<<" ERREUR LINK CODE\n";
+		}
+	}
 }
 
+void Controller::traitementTc(Tc* msg) {
+
+}
 
