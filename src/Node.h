@@ -22,6 +22,8 @@
 #include "Route.h"
 #include "IPv6.h"
 #include "const.h"
+#include "Tc.h"
+#include "Hello.h"
 
 
 class Node {
@@ -42,7 +44,7 @@ private:
 	boost::thread mTimerHello, mTimerTc;
 	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable,mMutexSystem,mMutexDestTable;
 	std::list<Route> mNeighborTable, mTwoHopNeighborTable, mDestTable;
-	std::list<IPv6> mNeighborIP, mMyMprList, mAdvertisedNeighborList;
+	std::list<IPv6> mNeighborIP, mMyMprList, mAdvertisedNeighborList, mDestIP;
 	std::list<std::list<IPv6> > mTwoHopNeighborIP;
 
 	/*
@@ -192,6 +194,10 @@ public:
 
 	inline void setDestTable(std::list<Route> liste){
 		mDestTable=liste;
+	}
+
+	inline std::list<IPv6> getDestIP(){
+		return mDestIP;
 	}
 	/**
 	 * Func imMpr()

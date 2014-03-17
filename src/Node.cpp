@@ -18,7 +18,7 @@ Node::~Node() {
 void Node::sendHello() {
 	std::list<IPv6> nghb;
 	mMutexIP.lock();
-	std::list<IPv6> mpr= mMyMprList;
+	std::list<IPv6> mpr = mMyMprList;
 	for (std::list<IPv6>::iterator it1 = mNeighborIP.begin();
 			it1 != mNeighborIP.end(); it1++) {
 		bool find = false;
@@ -34,7 +34,7 @@ void Node::sendHello() {
 	}
 	mMutexIP.unlock();
 	sleep(HELLO_INTERVAL);
-	Hello *msg= new Hello(1,HELLO_TYPE,mMyIp,0,1,nghb,mpr);
+	Hello *msg = new Hello(1, HELLO_TYPE, mMyIp, 0, 1, nghb, mpr);
 	msg->sendHello();
 	/* appeler fonctions de construction et d'envoi de message Hello */
 }
@@ -44,7 +44,8 @@ void Node::sendTc() {
 	sleep(TC_INTERVAL);
 	if (isMpr()) {
 		mMutexIP.lock();
-		std::cout << "\n***** ENVOI TC *****\n";
+		Tc *msg = new Tc(1, TC_TYPE, mMyIp, 0, 1, mAdvertisedNeighborList);
+		msg->sendTc();
 		/*std::cout << "\n MPR LISTE \n**************** " << std::endl;
 		 for (std::list<IPv6>::iterator ipv = mMyMprList.begin();
 		 ipv != mMyMprList.end(); ipv++) {
@@ -486,6 +487,7 @@ std::string Node::macToIpv6() {
 int Node::addDestTable(Route *route) {
 	if (!updDestTable(route)) {
 		mDestTable.push_back(*route);
+		mDestIP.push_back(*(route->getIpDest()));
 	}
 	return 0;
 }
@@ -512,6 +514,11 @@ int Node::delDestTable(Route *route) {
 		if (it->getIpDest()->isEgal(ipToComp)) {
 			it->setAction(DEL);
 			break;
+		}
+	}
+	for(std::list<IPv6>::iterator it = mDestIP.begin();it!=mDestIP.end();it++){
+		if(it->isEgal(route->getIpDest())){
+			mDestIP.erase(it);
 		}
 	}
 	return 0;

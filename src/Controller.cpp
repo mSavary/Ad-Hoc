@@ -23,18 +23,21 @@ Controller::~Controller() {
 }
 
 void Controller::run() {
-	/*mListener->listenSocket(); // dans un thread car c'est le prod
-	 while (1){
-	 //Message *msg = mListener->getMsg();
-	 int type = msg->getMessageType();
-	 if(type == HELLO_TYPE){// ajouter le type de HELLO dans const.h
-	 Hello* helloMsg= (Hello*)msg;
-	 traitementHello(helloMsg);
-	 } else if (type == TC_TYPE){// TC_TYPE a ajouter dans const.h
-	 Tc* tcMsg = (Tc*)msg;
-	 traitementTc(tcMsg);
-	 }
-	 }*/
+	mListener->listenSocket(); // dans un thread car c'est le prod
+	while (1) {
+		Message tmp = mListener->getMsg();
+		if (!(tmp.getTimeToLive() < 0)) { // TODO verifier le TTL
+			Message *msg = &tmp;
+			int type = msg->getMessageType();
+			if (type == HELLO_TYPE) { // ajouter le type de HELLO dans const.h
+				Hello *helloMsg = (Hello *) msg;
+				traitementHello(helloMsg);
+			} else if (type == TC_TYPE) { // TC_TYPE a ajouter dans const.h
+				Tc *tcMsg = (Tc*) msg;
+				traitementTc(tcMsg);
+			}
+		}
+	}
 }
 
 void Controller::traitementHello(Hello* msg) {
@@ -75,8 +78,9 @@ void Controller::traitementHello(Hello* msg) {
 				if (itIp->isEgal(mNode->getMyIp())) {
 					advertise = true;
 					mNode->addAdvertisedNeighbor(origIp);
-				} else{
-					mNode->addTwoHopNeighbor(&(*itIp),origIp,2,mNode->getInterface());
+				} else {
+					mNode->addTwoHopNeighbor(&(*itIp), origIp, 2,
+							mNode->getInterface());
 				}
 			}
 			if (!advertise) {
@@ -86,15 +90,44 @@ void Controller::traitementHello(Hello* msg) {
 			std::list<IPv6> listIp = (*itListNeighbor).getNeighborsAddrList();
 			for (std::list<IPv6>::iterator itIp = listIp.begin();
 					itIp != listIp.end(); itIp++) {
-				mNode->addTwoHopNeighbor(&(*itIp),origIp,2,mNode->getInterface());
+				mNode->addTwoHopNeighbor(&(*itIp), origIp, 2,
+						mNode->getInterface());
 			}
-		} else{
-			std::cout<<" ERREUR LINK CODE\n";
+		} else {
+			std::cout << " ERREUR LINK CODE\n";
 		}
 	}
 }
 
 void Controller::traitementTc(Tc* msg) {
+	std::list<IPv6> listAdvertised = msg->getAdvertisedNeighborMainAddress();
+	for (std::list<IPv6>::iterator itMsg = listAdvertised.begin();
+			itMsg != listAdvertised.end(); itMsg++) {
+		bool find = false;
+		for (std::list<IPv6>::iterator itNode = mNode->getDestIP().begin();
+				itNode != mNode->getDestIP().end(); itNode++) {
+			IPv6 * ipToComp = &(*itNode);
 
+			if (itMsg->isEgal(ipToComp)) {
+				find = true;
+				for (std::list<Destination>::iterator itDest =
+						mDestination.begin(); itDest != mDestination.end();
+						itDest++) {
+					if (itMsg->isEgal(itDest->getIp())) {
+						itDest->resetTimer();
+						break;
+					}
+				}
+				break;
+			}
+		}
+		if (!find) {
+			Route *route = new Route(&(*itMsg), NULL/*TODO IP DERNIER FORWARD*/,
+					msg->getHopCount(), mNode->getInterface());
+			mNode->addDestTable(route);
+			Destination *dest = new Destination(&(*itMsg), msg->getHopCount());
+			mDestination.push_back(*dest);
+		}
+	}
 }
 
