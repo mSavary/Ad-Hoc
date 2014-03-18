@@ -46,14 +46,7 @@ void Node::sendTc() {
 		mMutexIP.lock();
 		Tc *msg = new Tc(1, TC_TYPE, mMyIp, 0, 1, mAdvertisedNeighborList);
 		msg->sendTc();
-		/*std::cout << "\n MPR LISTE \n**************** " << std::endl;
-		 for (std::list<IPv6>::iterator ipv = mMyMprList.begin();
-		 ipv != mMyMprList.end(); ipv++) {
-		 std::cout << ipv->toChar() << std::endl;
-		 }
-		 std::cout << "********************\n";*/
 		mMutexIP.unlock();
-		sendTc();
 	}
 
 	/* appeler fonctions de construction et d'envoi de message Tc */
@@ -485,6 +478,18 @@ std::string Node::macToIpv6() {
 }
 
 int Node::addDestTable(Route *route) {
+	for (std::list<IPv6>::iterator it = mNeighborIP.begin();
+			it != mNeighborIP.end(); it++) {
+		if (it->isEgal(route->getIpDest())) {
+			return 0;
+		}
+	}
+	for (std::list<std::list<IPv6> >::iterator it = mTwoHopNeighborIP.begin();
+			it != mTwoHopNeighborIP.end(); it++) {
+		if ((it->front()).isEgal(route->getIpDest())) {
+			return 0;
+		}
+	}
 	if (!updDestTable(route)) {
 		mDestTable.push_back(*route);
 		mDestIP.push_back(*(route->getIpDest()));
@@ -516,8 +521,9 @@ int Node::delDestTable(Route *route) {
 			break;
 		}
 	}
-	for(std::list<IPv6>::iterator it = mDestIP.begin();it!=mDestIP.end();it++){
-		if(it->isEgal(route->getIpDest())){
+	for (std::list<IPv6>::iterator it = mDestIP.begin(); it != mDestIP.end();
+			it++) {
+		if (it->isEgal(route->getIpDest())) {
 			mDestIP.erase(it);
 		}
 	}

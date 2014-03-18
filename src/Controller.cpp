@@ -23,7 +23,7 @@ Controller::~Controller() {
 }
 
 void Controller::run() {
-	mListener->listenSocket(); // dans un thread car c'est le prod
+	boost::thread threadListen = boost::thread(mListener->listenSocket(), this);
 	while (1) {
 		Message tmp = mListener->getMsg();
 		if (!(tmp.getTimeToLive() < 0)) { // TODO verifier le TTL
