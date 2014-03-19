@@ -24,6 +24,11 @@ Listener::Listener() {
 	}
 }
 
+int Listener::run(){
+	boost::thread threadListen = boost::thread(&Listener::listenSocket, this);
+	return 1;
+}
+
 void Listener::listenSocket() {
 	boost::system::error_code error;
 	try {

@@ -28,15 +28,16 @@ private:
 	std::list<Message> mListMsg;
 	boost::mutex mProtectList;
 	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons;
-
-public:
-	Listener();
-	~Listener();
-
 	/**
 	 * Listening on the socket
 	 */
 	void listenSocket();
+
+public:
+	Listener();
+	~Listener();
+	int run();
+
 
 	/**
 	 * Put the received message on the list

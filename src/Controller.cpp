@@ -23,23 +23,28 @@ Controller::~Controller() {
 }
 
 void Controller::run() {
-	boost::thread threadListen = boost::thread(mListener->listenSocket(), this);
-	while (1) {
-		Message tmp = mListener->getMsg();
-		if (!(tmp.getTimeToLive() < 0)) { // TODO verifier le TTL
-			Message *msg = &tmp;
-			int type = msg->getMessageType();
-			if (type == HELLO_TYPE) { // ajouter le type de HELLO dans const.h
-				Hello *helloMsg = (Hello *) msg;
-				traitementHello(helloMsg);
-			} else if (type == TC_TYPE) { // TC_TYPE a ajouter dans const.h
-				Tc *tcMsg = (Tc*) msg;
-				traitementTc(tcMsg);
+	if (mListener->run()) {
+		int i=0;
+		while (1) {
+			i = (i+1)%5;
+			Message tmp = mListener->getMsg();
+			if (!(tmp.getTimeToLive() < 0)) { // TODO verifier le TTL
+				Message *msg = &tmp;
+				int type = msg->getMessageType();
+				if (type == HELLO_TYPE) { // ajouter le type de HELLO dans const.h
+					Hello *helloMsg = (Hello *) msg;
+					traitementHello(helloMsg);
+				} else if (type == TC_TYPE) { // TC_TYPE a ajouter dans const.h
+					Tc *tcMsg = (Tc*) msg;
+					traitementTc(tcMsg);
+				}
+			}
+			if(i==4){
+				mRoutingTable->systemTableUpdate(mNode);
 			}
 		}
 	}
 }
-
 void Controller::traitementHello(Hello* msg) {
 	IPv6* origIp = msg->getOriginatorAddress();
 	std::list<IPv6> listNghbNode = mNode->getNeighborIP();
