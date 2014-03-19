@@ -161,7 +161,7 @@ int Hello::sendHello() {
 	// WillingNess
 	*(send_buf + 31) = mWillingness;
 
-	int c = 32;
+	c = 32;
 
 	uint16_t helloSize = 0;
 	int i = 0;

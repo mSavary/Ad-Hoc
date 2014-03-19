@@ -21,7 +21,7 @@ IPv6::IPv6(std::string IPv6Str) {
 	std::stringstream str0;
 	str0 << IPv6Str.substr(0, 4);
 	int array0;
-	str0 >> std::hex >> array0;
+	str0 >> array0;
 
 
 	std::stringstream str4;

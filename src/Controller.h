@@ -25,13 +25,16 @@ private:
 	Listener *mListener;
 	RoutingTable *mRoutingTable;
 	std::list<Destination> mDestination;
+	void traitementHello(Hello* msg);
+	void traitementTc(Tc* msg);
 
 public:
 	Controller();
 	virtual ~Controller();
 	void run();
-	void traitementHello(Hello* msg);
-	void traitementTc(Tc* msg);
+	inline Node* getNode(){
+		return mNode;
+	}
 };
 
 #endif /* CONTROLLER_H_ */

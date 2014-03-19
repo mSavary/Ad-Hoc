@@ -104,7 +104,7 @@ int Tc::sendTc() {
 	// IPV6 : AdvertisedNeighborMainAddress 
 	*(send_buf + 30) = this->getReserved();
 
-	int c = 32;
+	c = 32;
 	int i = 0;
 //todo : scope 0/1/2/3 IP !!
 	for (std::list<IPv6>::iterator it = mAdvertisedNeighborMainAddress.begin();
