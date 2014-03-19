@@ -18,27 +18,33 @@ IPv6::IPv6(short scope5, short scope6, short scope7, short scope8) {
 }
 
 IPv6::IPv6(std::string IPv6Str) {
+	std::stringstream str0;
+	str0 << IPv6Str.substr(0, 4);
+	int array0;
+	str0 >> std::hex >> array0;
+
+
 	std::stringstream str4;
-	str4 << IPv6Str.substr(0, 4);
+	str4 << IPv6Str.substr(6, 4);
 	int array4;
 	str4 >> std::hex >> array4;
 
 	std::stringstream str5;
-	str5 << IPv6Str.substr(5, 4);
+	str5 << IPv6Str.substr(11, 4);
 	int array5;
 	str5 >> std::hex >> array5;
 
 	std::stringstream str6;
-	str6 << IPv6Str.substr(10, 4);
+	str6 << IPv6Str.substr(16, 4);
 	int array6;
 	str6 >> std::hex >> array6;
 
 	std::stringstream str7;
-	str7 << IPv6Str.substr(15, 4);
+	str7 << IPv6Str.substr(21, 4);
 	int array7;
 	str7 >> std::hex >> array7;
 
-	mScope[0] = EN_TETE_IPv6;
+	mScope[0] = (short)array0;
 	mScope[1] = 0x0;
 	mScope[2] = 0x0;
 	mScope[3] = 0x0;
