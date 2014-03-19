@@ -18,40 +18,40 @@ IPv6::IPv6(short scope5, short scope6, short scope7, short scope8) {
 }
 
 IPv6::IPv6(std::string IPv6Str) {
-	std::stringstream str0;
-	str0 << IPv6Str.substr(0, 4);
-	int array0;
-	str0 >> array0;
+	int i = 0;
+	std::string temp;
 
-
-	std::stringstream str4;
-	str4 << IPv6Str.substr(6, 4);
-	int array4;
-	str4 >> std::hex >> array4;
-
-	std::stringstream str5;
-	str5 << IPv6Str.substr(11, 4);
-	int array5;
-	str5 >> std::hex >> array5;
-
-	std::stringstream str6;
-	str6 << IPv6Str.substr(16, 4);
-	int array6;
-	str6 >> std::hex >> array6;
-
-	std::stringstream str7;
-	str7 << IPv6Str.substr(21, 4);
-	int array7;
-	str7 >> std::hex >> array7;
-
-	mScope[0] = (short)array0;
-	mScope[1] = 0x0;
-	mScope[2] = 0x0;
-	mScope[3] = 0x0;
-	mScope[4] = (short)array4;
-	mScope[5] = (short)array5;
-	mScope[6] = (short)array6;
-	mScope[7] = (short)array7;
+	for (std::string::iterator it = IPv6Str.begin(); it != IPv6Str.end();
+			it++) {
+		char carac = *it;
+		if (i != 7) {
+			if (carac != ':') {
+				temp.push_back(carac);
+			} else {
+				std::stringstream scope;
+				int array;
+				scope << temp;
+				scope >> std::hex >> array;
+				mScope[i] = (short) array;
+				temp = "";
+				if (i == 0) { // for the first scope
+					mScope[1] = 0x0;
+					mScope[2] = 0x0;
+					mScope[3] = 0x0;
+					it++;
+					i = 3;
+				}
+				i++;
+			}
+		} else { // for the last scope
+			temp.push_back(carac);
+			std::stringstream scope;
+			int array;
+			scope << temp;
+			scope >> std::hex >> array;
+			mScope[i] = (short) array;
+		}
+	}
 }
 
 short IPv6::getScope(int scope) {
@@ -89,4 +89,3 @@ bool IPv6::isEgal(IPv6* ip) {
 IPv6::~IPv6() {
 	// TODO Auto-generated destructor stub
 }
-
