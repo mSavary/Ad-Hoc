@@ -35,8 +35,8 @@ void Listener::listenSocket() {
 					*mRemoteEndpoint, 0, error);
 			if (error && error != boost::asio::error::message_size)
 				throw boost::system::system_error(error);
-
-			std::cout << "taille message : " << len << "\n";
+				
+			std::string address =  mRemoteEndpoint->address().to_string();
 
 			// future stored message
 			Message * msg;
@@ -141,7 +141,7 @@ void Listener::listenSocket() {
 			} else if (messageType == Tc_MESSAGE) {
 				Tc* tMH = new Tc(packetLength, packetSequenceNumber,
 						messageType, vTime, messageSize, originatorAddress,
-						timeToLive, hopCount, messageSequenceNumber);
+						timeToLive, hopCount, messageSequenceNumber,address);
 
 				tMH->setANSN(*(uint16_t*) temp);
 				temp += 2;

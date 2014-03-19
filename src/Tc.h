@@ -24,16 +24,17 @@ class Tc: public Message {
 private:
 	uint16_t mANSN;
 	uint16_t mReserved;
+	IPv6 *mFromIp;
 	std::list<IPv6> mAdvertisedNeighborMainAddress;
 
 public:
 	Tc(uint16_t packetSequenceNumber, uint8_t messageType,
 			IPv6 * originatorAddress, uint8_t hopCount,
-			uint16_t messageSequenceNumber, std::list<IPv6> advertisedList);
+			uint16_t messageSequenceNumber, std::list<IPv6> advertisedList,std::string ip);
 	Tc(uint16_t packetLength, uint16_t packetSequenceNumber,
 			uint8_t messageType, uint8_t vTime, uint16_t messageSize,
 			IPv6 * originatorAdress, uint8_t timeToLive, uint8_t hopCount,
-			uint16_t messageSequenceNumber);
+			uint16_t messageSequenceNumber,std::string ip);
 
 	uint16_t getANSN();
 	uint16_t getReserved();
