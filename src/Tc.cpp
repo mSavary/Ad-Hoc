@@ -10,19 +10,21 @@ using namespace std;
 //todo CALCUL AUTO de :uint16_t packetLength,uint8_t vTime,uint16_t messageSize, uint8_t timeToLive
 Tc::Tc(uint16_t packetSequenceNumber, uint8_t messageType,
 		IPv6 * originatorAddress, uint8_t hopCount,
-		uint16_t messageSequenceNumber,std::list<IPv6>advertisedList) :
+		uint16_t messageSequenceNumber,std::list<IPv6>advertisedList, std::string ip) :
 		Message(packetSequenceNumber, messageType, originatorAddress, hopCount,
 				messageSequenceNumber) {
 	mAdvertisedNeighborMainAddress=advertisedList;
+	mFromIp = new IPv6(ip);
 }
 
 Tc::Tc(uint16_t packetLength, uint16_t packetSequenceNumber,
 		uint8_t messageType, uint8_t vTime, uint16_t messageSize,
 		IPv6 * originatorAddress, uint8_t timeToLive, uint8_t hopCount,
-		uint16_t messageSequenceNumber) :
+		uint16_t messageSequenceNumber,std::string ip) :
 		Message(packetLength, packetSequenceNumber, messageType, vTime,
 				messageSize, originatorAddress, timeToLive, hopCount,
 				messageSequenceNumber) {
+	mFromIp = new IPv6(ip);
 } // end construct
 
 uint16_t Tc::getANSN() {
@@ -153,9 +155,9 @@ int Tc::sendTc() {
 	io_service = new boost::asio::io_service();
 	// TODO PAS IPV4 mais IPV6
 	receiver_endpoint = new boost::asio::ip::udp::endpoint(
-			boost::asio::ip::address::from_string("127.0.0.1"), 7171);
+			boost::asio::ip::address::from_string("127.0.0.1"), 7171);// todo broadcast
 	sender_endpoint = new boost::asio::ip::udp::endpoint(
-			boost::asio::ip::address::from_string("127.0.0.1"), 2050);
+			boost::asio::ip::address_v6::from_string(mFromIp->toChar()), 2050);
 	socket = new boost::asio::ip::udp::socket(*io_service, *sender_endpoint);
 	socket->send_to(boost::asio::buffer(container), *receiver_endpoint);
 
