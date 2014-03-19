@@ -44,7 +44,7 @@ void Node::sendTc() {
 	sleep(TC_INTERVAL);
 	if (isMpr()) {
 		mMutexIP.lock();
-		Tc *msg = new Tc(1, TC_TYPE, mMyIp, 0, 1, mAdvertisedNeighborList);
+		Tc *msg = new Tc(1, TC_TYPE, mMyIp, 0, 1, mAdvertisedNeighborList, mMyIp->toChar());
 		msg->sendTc();
 		mMutexIP.unlock();
 	}
@@ -438,8 +438,7 @@ std::string Node::bin2Hex(const std::string& s) {
 }
 
 std::string Node::macToIpv6() {
-	std::string commande = "ifconfig " + mInterface + "| grep " + mInterface
-			+ "| awk '$0 ~ /HWaddr/ { print $5 }'";
+	std::string commande = "ifconfig wlan0 | grep wlan0 | awk '$0 ~ /HWaddr/ { print $5 }'";
 	char * cmd = (char*) commande.c_str();
 	// todo : renvoyer erreur si chaine vide
 	std::string result = getResCmd(cmd);
@@ -472,10 +471,18 @@ std::string Node::macToIpv6() {
 	// insert of first octet modified
 	IPv6.replace(0, 2, hexaStr.substr(2, 4));
 
-	// On n'insère pas le préfixe ici car il sera insérer par le constructeur de la classe IPv6
+	// créer un flux de sortie
+	std::ostringstream enTeteIPv6Temp;
+	// écrire un nombre dans le flux
+	enTeteIPv6Temp << EN_TETE_IPv6;
+	// récupérer une chaîne de caractères
+	std::string enTeteIPv6 = enTeteIPv6Temp.str()+"::";
+
+	IPv6.insert(0, enTeteIPv6);
 
 	return IPv6;
 }
+
 
 int Node::addDestTable(Route *route) {
 	for (std::list<IPv6>::iterator it = mNeighborIP.begin();
