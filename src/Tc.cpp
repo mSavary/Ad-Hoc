@@ -85,19 +85,11 @@ int Tc::sendTc() {
 	this->mReserved = 0x0000;
 
 	// IPV6
-	*(uint16_t*) (send_buf + 8) = 0x0000; // todo entete IPV6
-	*(uint16_t*) (send_buf + 8) = 0x0000;
-	*(uint16_t*) (send_buf + 8) = 0x0000;
-	*(uint16_t*) (send_buf + 8) = 0x0000;
-	*(uint16_t*) (send_buf + 16) = mOriginatorAddress->getScope(4);
-	// *(send_buf+17) =0xF2;
-	*(uint16_t*) (send_buf + 18) = mOriginatorAddress->getScope(5);
-	// *(send_buf+19) =0xF4;
-	*(uint16_t*) (send_buf + 20) = mOriginatorAddress->getScope(6);
-	// *(send_buf+21) =0xF6;
-	*(uint16_t*) (send_buf + 22) = mOriginatorAddress->getScope(7);
-	// *(send_buf+23) =0xF8;
-
+	int c = 8;
+	for(int y=0; y<8; y++){
+		*(uint16_t*) (send_buf + c) = mOriginatorAddress->getScope(y);
+		c+=2;
+	}
 	//Time To Live
 	*(send_buf + 24) = mTimeToLive;
 	//HOP COUNT
@@ -117,15 +109,12 @@ int Tc::sendTc() {
 //todo : scope 0/1/2/3 IP !!
 	for (std::list<IPv6>::iterator it = mAdvertisedNeighborMainAddress.begin();
 			it != mAdvertisedNeighborMainAddress.end() && i < 31; it++) {
-		c += 8;
-		*(uint16_t*) (send_buf + c) = it->getScope(4);
-		c += 2;
-		*(uint16_t*) (send_buf + c) = it->getScope(5);
-		c += 2;
-		*(uint16_t*) (send_buf + c) = it->getScope(6);
-		c += 2;
-		*(uint16_t*) (send_buf + c) = it->getScope(7);
-		c += 2;
+
+		for(int j = 0; j<8;j++){
+			*(uint16_t*) (send_buf + c) = it->getScope(j);
+			c+=2;
+		}
+
 		mAdvertisedNeighborMainAddress.erase(it);
 		i++;
 	}
@@ -155,7 +144,7 @@ int Tc::sendTc() {
 	io_service = new boost::asio::io_service();
 	// TODO PAS IPV4 mais IPV6
 	receiver_endpoint = new boost::asio::ip::udp::endpoint(
-			boost::asio::ip::address::from_string("127.0.0.1"), 7171);// todo broadcast
+			boost::asio::ip::address_v6::from_string("2014::ffff:ffff:ffff:ffff"), 7171);// todo broadcast
 	sender_endpoint = new boost::asio::ip::udp::endpoint(
 			boost::asio::ip::address_v6::from_string(mFromIp->toChar()), 2050);
 	socket = new boost::asio::ip::udp::socket(*io_service, *sender_endpoint);
