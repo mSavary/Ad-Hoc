@@ -35,17 +35,17 @@ See AUTHORS and COPYRIGHT for the list of contributors and license informations.
 /**USAGE
 /******
 
-		AD-HOC Networks is made to handle the kernel routing table to be able to join a whole network 
-		without any router or switch base on OLSR (rfc 3626).
+	AD-HOC Networks is made to handle the kernel routing table to be able to join a whole network 
+	without any router or switch base on OLSR (rfc 3626).
+	
+	To configure your PC for running Ad-Hoc Networks :
+		ifconfig /*Your Wifi Interface*/
+	look for your inet6 addr : fe80::a:a:a:a and copy the last 4 scope here : a:a:a:a
+	then run :
+		cd Ad-Hoc/Linux_v6/src/
+		./BootScript /*Your Wifi Interface*/ 2014::/*Paste what you copy before*/
+		for example : ./BootScript wlan0 2014::a:a:a:a
 		
-		To configure your PC for running Ad-Hoc Networks :
-			ifconfig /*Your Wifi Interface*/
-		look for your inet6 addr : fe80::a:a:a:a and copy the last 4 scope here : a:a:a:a
-		then run :
-			cd Ad-Hoc/Linux_v6/src/
-			./BootScript /*Your Wifi Interface*/ 2014::/*Paste what you copy before*/
-			for example : ./BootScript wlan0 2014::a:a:a:a
-			
-		Your PC will automatically restart. 
-		
-		Then you can run Ad-Hoc/Linux_v6/src/AdHoc
+	Your PC will automatically restart. 
+	
+	Then you can run Ad-Hoc/Linux_v6/src/AdHoc
