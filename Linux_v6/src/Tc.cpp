@@ -8,23 +8,44 @@
 
 using namespace std;
 //todo CALCUL AUTO de :uint16_t packetLength,uint8_t vTime,uint16_t messageSize, uint8_t timeToLive
-Tc::Tc(uint16_t packetSequenceNumber, uint8_t messageType,
-		IPv6 * originatorAddress, uint8_t hopCount,
-		uint16_t messageSequenceNumber,std::list<IPv6>advertisedList, std::string ip) :
-		Message(packetSequenceNumber, messageType, originatorAddress, hopCount,
-				messageSequenceNumber) {
-	mAdvertisedNeighborMainAddress=advertisedList;
-	mFromIp = new IPv6(ip);
+Tc::Tc(uint16_t packetSequenceNumber, IPv6 * originatorAddress,
+		uint16_t messageSequenceNumber, std::list<IPv6*> advertisedList) :
+		Message() {
+	mPacketLength = 0;
+	mPacketSequenceNumber = packetSequenceNumber;
+	mMessageType = TC_TYPE;
+	mVTime = C_TIME * (1 + a / 16) * pow(2, b);// todo a et B ?
+	mMessageSize = 0;
+	mOriginatorAddress = originatorAddress;
+	mTimeToLive = 255;
+	mHopCount = 0;
+	mMessageSequenceNumber = messageSequenceNumber;
+	mANSN = 55; //todo combien ca vaut ? c'est quoi  ?
+	mReserved = 0x0;
+	mFromIp = originatorAddress;
+	mAdvertisedNeighborMainAddress = advertisedList;
+
 }
 
 Tc::Tc(uint16_t packetLength, uint16_t packetSequenceNumber,
 		uint8_t messageType, uint8_t vTime, uint16_t messageSize,
 		IPv6 * originatorAddress, uint8_t timeToLive, uint8_t hopCount,
-		uint16_t messageSequenceNumber,std::string ip) :
-		Message(packetLength, packetSequenceNumber, messageType, vTime,
-				messageSize, originatorAddress, timeToLive, hopCount,
-				messageSequenceNumber) {
+		uint16_t messageSequenceNumber,uint16_t Ansn, std::string ip,
+		std::list<IPv6*> advertisedList) :
+		Message() {
+	mPacketLength = packetLength;
+	mPacketSequenceNumber = packetSequenceNumber;
+	mMessageType = messageType;
+	mVTime = vTime;
+	mMessageSize = messageSize;
+	mOriginatorAddress = originatorAddress;
+	mTimeToLive = timeToLive;
+	mHopCount = hopCount;
+	mMessageSequenceNumber = messageSequenceNumber;
+	mANSN = Ansn; //todo combien ca vaut ? c'est quoi  ?
+	mReserved = 0x0;
 	mFromIp = new IPv6(ip);
+	mAdvertisedNeighborMainAddress = advertisedList;
 } // end construct
 
 uint16_t Tc::getANSN() {
@@ -39,7 +60,7 @@ void Tc::setReserved(uint16_t res) {
 	mReserved = res;
 }
 
-std::list<IPv6> Tc::getAdvertisedNeighborMainAddress() {
+std::list<IPv6*> Tc::getAdvertisedNeighborMainAddress() {
 	return mAdvertisedNeighborMainAddress;
 }
 
@@ -47,48 +68,39 @@ void Tc::setANSN(uint16_t n) {
 	mANSN = n;
 }
 
-void Tc::setAdvertisedNeighborMainAddress(short n, short o, short p, short q) {
+void Tc::addAdvertisedNeighborMainAddress(short n, short o, short p, short q) {
 	IPv6* temp = new IPv6(n, o, p, q);
-	mAdvertisedNeighborMainAddress.push_back(*temp);
+	mAdvertisedNeighborMainAddress.push_back(temp);
 }
 
-void Tc::setAdvertisedNeighborMainAddress(IPv6* n) {
-	mAdvertisedNeighborMainAddress.push_back(*n);
+void Tc::addAdvertisedNeighborMainAddress(IPv6* n) {
+	mAdvertisedNeighborMainAddress.push_back(n);
 }
 
 void Tc::printData() {
 	std::cout << "ANSN = ";
 	std::cout << (int) mANSN << std::endl;
 
-	std::list<IPv6> ip = mAdvertisedNeighborMainAddress;
+	std::list<IPv6*> ip = mAdvertisedNeighborMainAddress;
+	std::cout << "Taille = " << mAdvertisedNeighborMainAddress.size()
+			<< std::endl;
 
-	for (std::list<IPv6>::iterator it = ip.begin(); it != ip.end(); it++) {
-		std::cout << " IP : " << it->toChar() << std::endl;
+	for (std::list<IPv6*>::iterator it = ip.begin(); it != ip.end(); it++) {
+		std::cout << " IP : " << (*it)->toChar() << std::endl;
 	}
 }
 
 int Tc::sendTc() {
-	boost::asio::io_service *io_service;
-	boost::asio::ip::udp::endpoint *receiver_endpoint;
-	boost::asio::ip::udp::endpoint *sender_endpoint;
-	boost::asio::ip::udp::socket *socket;
 
 	char* send_buf;
 	send_buf = (char*) malloc(sizeof(char) * BUFF_SIZE);
-
-	uint16_t TcSize = 4;
-	this->mMessageType = 0x02;
-	this->mVTime = (C_TIME * (1 + a / 16) * pow(2, b));
-	this->mTimeToLive = 0xFF;
-	this->mHopCount = 0x00;
-	this->mANSN = getANSN();
-	this->mReserved = 0x0000;
-
+	mHopCount++;
+	mTimeToLive--;
 	// IPV6
 	int c = 8;
-	for(int y=0; y<8; y++){
+	for (int y = 0; y < 8; y++) {
 		*(uint16_t*) (send_buf + c) = mOriginatorAddress->getScope(y);
-		c+=2;
+		c += 2;
 	}
 	//Time To Live
 	*(send_buf + 24) = mTimeToLive;
@@ -99,29 +111,26 @@ int Tc::sendTc() {
 
 	//Tc MESSAGE :
 	// ANSN
-	*(uint16_t*) (send_buf + 28) = this->getANSN();
-	//+2 pour le reserved
+	*(uint16_t*) (send_buf + 28) = mANSN;
 	// IPV6 : AdvertisedNeighborMainAddress 
-	*(send_buf + 30) = this->getReserved();
+	*(uint16_t*) (send_buf + 30) = mReserved;
 
 	c = 32;
-	int i = 0;
 //todo : scope 0/1/2/3 IP !!
-	for (std::list<IPv6>::iterator it = mAdvertisedNeighborMainAddress.begin();
-			it != mAdvertisedNeighborMainAddress.end() && i < 31; it++) {
-
-		for(int j = 0; j<8;j++){
-			*(uint16_t*) (send_buf + c) = it->getScope(j);
-			c+=2;
+	for (std::list<IPv6*>::iterator it = mAdvertisedNeighborMainAddress.begin();
+			it != mAdvertisedNeighborMainAddress.end(); it++) {
+		std::cout << "push : " << (*it)->toChar() << std::endl;
+		for (int j = 0; j < 8; j++) {
+			*(uint16_t*) (send_buf + c) = (*it)->getScope(j);
+			c += 2;
 		}
-
-		mAdvertisedNeighborMainAddress.erase(it);
-		i++;
 	}
 
-	TcSize += mAdvertisedNeighborMainAddress.size();
-	this->mMessageSize = TcSize + 24;
-	this->mPacketLength = mMessageSize + 4; // 2o
+	uint16_t TcSize = (mAdvertisedNeighborMainAddress.size()*16)+4;
+	std::cout << "Taille1 = " << mAdvertisedNeighborMainAddress.size()
+			<< std::endl;
+	mMessageSize = TcSize + 20;
+	mPacketLength = mMessageSize + 4;	//2o=32+mAdvertisedNeighborMainAddress.size()
 
 	//packetHeader
 	// packetLength
@@ -131,32 +140,28 @@ int Tc::sendTc() {
 
 	//messageHeader
 	// messageType 
-	*(send_buf + 4) = mMessageType;
+	* (send_buf + 4) = mMessageType;
 	//Vtime
-	*(send_buf + 5) = mVTime;
+	* (send_buf + 5) = mVTime;
 	// messageSize
 	*(uint16_t*) (send_buf + 6) = mMessageSize;
 
-	printf("c = %d\n", c);
-	printf("mMessageSize = %d\n", mMessageSize);
-
 	std::string container(send_buf, c);
-	io_service = new boost::asio::io_service();
-	// TODO PAS IPV4 mais IPV6
-	receiver_endpoint = new boost::asio::ip::udp::endpoint(
-			boost::asio::ip::address_v6::from_string("2014::ffff:ffff:ffff:ffff"), 7171);// todo broadcast
-	sender_endpoint = new boost::asio::ip::udp::endpoint(
-			boost::asio::ip::address_v6::from_string(mFromIp->toChar()), 2050);
-	socket = new boost::asio::ip::udp::socket(*io_service, *sender_endpoint);
-	socket->send_to(boost::asio::buffer(container), *receiver_endpoint);
+	boost::asio::io_service io_service;
+	boost::asio::ip::udp::resolver resolver(io_service);
 
-	if (mAdvertisedNeighborMainAddress.size() > 0)//IMPORTANT retourne 1 si la liste des voisins n'est pas vide ! Besoin de rappeler la fonction send !
-			{
-		sendTc();
-	}
+	boost::asio::ip::udp::resolver::query query1(boost::asio::ip::udp::v6(),
+			"ff02::1", "698");
+	boost::asio::ip::udp::resolver::query query2(boost::asio::ip::udp::v6(),
+			mOriginatorAddress->toChar(), "698");
 
-	else //liste des voisins vide
-	{
-		return 0;
-	}
+	boost::asio::ip::udp::endpoint receiver_endpoint = *resolver.resolve(
+			query1);
+	boost::asio::ip::udp::endpoint sender_endpoint = *resolver.resolve(query2);
+	boost::asio::ip::udp::socket socket(io_service);
+	socket.open(boost::asio::ip::udp::v6());
+	socket.send_to(boost::asio::buffer(container), receiver_endpoint);
+	socket.close();
+
+	return 0;
 }

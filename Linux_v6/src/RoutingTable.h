@@ -31,7 +31,7 @@ public:
 		}*/
 
 private:
-	std::list<Route> mRouteList;
+	std::list<Route*> mRouteList;
 
 	/**
 	 *  Function addRoute

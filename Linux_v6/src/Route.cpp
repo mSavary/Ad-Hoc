@@ -16,7 +16,7 @@ Route::Route(IPv6 *ipDest,
 	mNextHop = nextHop;
 	mMetric = metric;
 	mInterface = interface;
-	mAction = NONE;
+	mAction = ADD;
 }
 
 IPv6* Route::getIpDest(){

@@ -22,10 +22,9 @@ class Listener {
 
 private:
 	boost::asio::io_service *mIoService;
-	boost::asio::ip::udp::endpoint *mRemoteEndpoint;
-	boost::asio::ip::udp::endpoint *mSenderEndpoint;
+	boost::asio::ip::udp::endpoint mRemoteEndpoint;
 	boost::asio::ip::udp::socket *mSocket;
-	std::list<Message> mListMsg;
+	std::list<Message*> mListMsg;
 	boost::mutex mProtectList;
 	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons;
 	/**
@@ -40,14 +39,9 @@ public:
 
 
 	/**
-	 * Put the received message on the list
-	 */
-	void receptionMsg(Message* msg);
-
-	/**
 	 * Get the last message of the list, for the Controller
 	 */
-	Message getMsg();
+	Message* getMsg();
 };
 
 #endif

@@ -8,14 +8,22 @@ my $fichierOrig = "/etc/network/interfaces.orig";
 copy($fichier,$fichierOrig);
 
 open (FICHIER, ">>$fichier") || die ("ERROR\n");
-# On écrit dans le fichier...
-print FICHIER "\niface $ARGV[0] inet static";
+# setting interface !
+print FICHIER "auto $ARGV[0]\niface $ARGV[0] inet6 static
+	address $ARGV[1]
+	netmask 64
+	wireless-essid Whisky 
+        wireless-channel 5
+        wireless-mode Ad-Hoc 
+        wireless-power on";
+     
 
 close (FICHIER);
 `NetworkManager status 2>&1`;
 if(`echo $?`!=0){
  `service network-manager restart`;
 }
- `iwconfig $ARGV[0] mode Ad-Hoc`;
+`ifconfig $ARGV[0] up`;
+`shutdown -r now`;
 print `echo Setting $ARGV[0] AD HOC`;
 

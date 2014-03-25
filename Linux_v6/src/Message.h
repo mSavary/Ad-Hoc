@@ -27,6 +27,7 @@ protected:
 	uint16_t mMessageSequenceNumber;
 
 public:
+	Message();
 	Message(uint16_t packetSequenceNumber, uint8_t messageType,
 			IPv6* originatorAddress, uint8_t hopCount,
 			uint16_t messageSequenceNumber);

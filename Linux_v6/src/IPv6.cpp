@@ -43,7 +43,7 @@ IPv6::IPv6(std::string IPv6Str) {
 				}
 				i++;
 			}
-		} else { // for the last scope
+		} else {
 			temp.push_back(carac);
 			std::stringstream scope;
 			int array;
@@ -52,6 +52,7 @@ IPv6::IPv6(std::string IPv6Str) {
 			mScope[i] = (short) array;
 		}
 	}
+	mScope[0]=EN_TETE_IPv6;
 }
 
 short IPv6::getScope(int scope) {
@@ -89,3 +90,4 @@ bool IPv6::isEgal(IPv6* ip) {
 IPv6::~IPv6() {
 	// TODO Auto-generated destructor stub
 }
+

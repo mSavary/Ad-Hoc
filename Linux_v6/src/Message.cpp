@@ -2,10 +2,14 @@
 
 using namespace std;
 
+Message::Message(){
+
+}
+
 Message::Message(uint16_t packetSequenceNumber, uint8_t messageType,
 		IPv6* originatorAddress, uint8_t hopCount,
 		uint16_t messageSequenceNumber) :
-		mPacketSequenceNumber(packetSequenceNumber), mOriginatorAddress(
+		mPacketSequenceNumber(packetSequenceNumber),mMessageType(messageType), mOriginatorAddress(
 				originatorAddress), mHopCount(hopCount), mMessageSequenceNumber(
 				messageSequenceNumber) {
 }
@@ -15,7 +19,7 @@ Message::Message(uint16_t packetLength, uint16_t packetSequenceNumber,
 		IPv6 * originatorAddress, uint8_t timeToLive, uint8_t hopCount,
 		uint16_t messageSequenceNumber) :
 		mPacketLength(packetLength), mPacketSequenceNumber(
-				packetSequenceNumber), mVTime(vTime), mOriginatorAddress(
+				packetSequenceNumber),mMessageType(messageType), mVTime(vTime), mOriginatorAddress(
 				originatorAddress), mTimeToLive(timeToLive), mHopCount(
 				hopCount), mMessageSequenceNumber(messageSequenceNumber) {
 }

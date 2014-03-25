@@ -5,107 +5,115 @@ Node::Node() {
 	mMpr = false;
 	mInterface = setInterface();
 	mMyIp = new IPv6(macToIpv6());
-	mTimerHello = boost::thread(&Node::sendHello, this);
-	mTimerTc = boost::thread(&Node::sendTc, this);
 
 }
 
 Node::~Node() {
-	mTimerHello.join();
-	mTimerTc.join();
 }
 
 void Node::sendHello() {
-	std::list<IPv6> nghb;
-	mMutexIP.lock();
-	std::list<IPv6> mpr = mMyMprList;
-	for (std::list<IPv6>::iterator it1 = mNeighborIP.begin();
-			it1 != mNeighborIP.end(); it1++) {
-		bool find = false;
-		for (std::list<IPv6>::iterator it2 = mMyMprList.begin();
-				it2 != mMyMprList.end(); it2++) {
-			if (!it2->isEgal(&(*it1))) {
-				find = true;
+	while (1) {
+		std::list<IPv6*> nghb;
+
+		mMutexMprIP.lock();
+		std::list<IPv6*> mpr = mMyMprList;
+		mMutexMprIP.unlock();
+		mMutexNeighborIP.lock();
+		for (std::list<IPv6*>::iterator it1 = mNeighborIP.begin();
+				it1 != mNeighborIP.end(); it1++) {
+			bool find = false;
+			for (std::list<IPv6*>::iterator it2 = mpr.begin(); it2 != mpr.end();
+					it2++) {
+				if (!(*it2)->isEgal((*it1))) {
+					find = true;
+				}
+			}
+			if (!find) {
+				nghb.push_back((*it1));
 			}
 		}
-		if (!find) {
-			nghb.push_back(*it1);
-		}
+		mMutexNeighborIP.unlock();
+		//std::cout << "ENVOI HELLO ; \n";
+		sleep(HELLO_INTERVAL);
+		int pqSeqNum = 1, mgSeqNum = 1;
+		Hello *msg = new Hello(pqSeqNum, mMyIp, mgSeqNum, nghb, mpr);
+		msg->printData();
+		msg->sendHello();
 	}
-	mMutexIP.unlock();
-	sleep(HELLO_INTERVAL);
-	Hello *msg = new Hello(1, HELLO_TYPE, mMyIp, 0, 1, nghb, mpr);
-	msg->sendHello();
 	/* appeler fonctions de construction et d'envoi de message Hello */
 }
 
 void Node::sendTc() {
-
-	sleep(TC_INTERVAL);
-	if (isMpr()) {
-		mMutexIP.lock();
-		Tc *msg = new Tc(1, TC_TYPE, mMyIp, 0, 1, mAdvertisedNeighborList, mMyIp->toChar());
-		msg->sendTc();
-		mMutexIP.unlock();
+	while (1) {
+		sleep(TC_INTERVAL);
+		if (isMpr()) {
+			mMutexAdvNeighborIP.lock();
+			std::list<IPv6*> advertiseList = mAdvertisedNeighborList;
+			mMutexAdvNeighborIP.unlock();
+			for (std::list<IPv6*>::iterator it = advertiseList.begin();
+					it != advertiseList.end(); it++) {
+				if ((*it)->isEgal(mMyIp)) {
+					advertiseList.erase(it);
+					if (advertiseList.size() == 0) {
+						mMpr = false;
+					}
+					break;
+				}
+			}
+			if (mMpr) {
+				int pqSeqNum = 1, mgSeqNum = 1;
+				Tc *msg = new Tc(pqSeqNum, mMyIp, mgSeqNum, advertiseList);
+				msg->sendTc();
+			}
+			mMutexAdvNeighborIP.lock();
+			mAdvertisedNeighborList = advertiseList;
+			mMutexAdvNeighborIP.unlock();
+		}
 	}
-
 	/* appeler fonctions de construction et d'envoi de message Tc */
 }
 
-int Node::selectMpr(std::list<std::list<IPv6> > TwoHopList,
-		std::list<IPv6> NeighborList) {
+int Node::selectMpr(std::list<std::list<IPv6*> > TwoHopList,
+		std::list<IPv6*> NeighborList) {
 	if (TwoHopList.size() == 0) {
 		return 1;
 	}
 
-	std::list<std::list<IPv6> > twoHopNeighborIP = TwoHopList;
-	std::list<IPv6> neighborIP = NeighborList;
-	IPv6 mpr;
-	std::list<IPv6> vMpr;
-	int nbrVoisMpr = 0;
-	bool ajoutMpr = false;
+	std::list<std::list<IPv6*> > twoHopNeighborIP = TwoHopList;
+	std::list<IPv6*> neighborIP = NeighborList;
 
-	for (std::list<IPv6>::iterator v = neighborIP.begin();
-			v != neighborIP.end(); ++v) {
-		int cptV = 0;
-		std::list<IPv6> listVoisin;
-		for (std::list<std::list<IPv6> >::iterator vi =
-				twoHopNeighborIP.begin(); vi != twoHopNeighborIP.end(); ++vi) {
-			std::list<IPv6> listIP = *vi;
-			bool passage = false;
-			for (std::list<IPv6>::iterator ipv = listIP.begin();
-					ipv != listIP.end(); ipv++) {
+	int nbrNgbMpr = 0;
+	IPv6* tmpMpr;
+	std::list<IPv6*> listNgbMpr;
+	for (std::list<IPv6*>::iterator itNgbIp = neighborIP.begin();
+			itNgbIp != neighborIP.end(); itNgbIp++) {
+		IPv6 *ipToTest = (*itNgbIp);
+		int nbrNgb = 0;
+		std::list<IPv6*> listTmpNgbMpr;
+		for (std::list<std::list<IPv6*> >::iterator itTwoHopNgbIp =
+				twoHopNeighborIP.begin();
+				itTwoHopNgbIp != twoHopNeighborIP.end(); itTwoHopNgbIp++) {
 
-				std::list<IPv6>::iterator fv;
-				if (passage) {
-					fv = listIP.begin();
-					IPv6 ipToComp = *ipv;
-					if (v->isEgal(&ipToComp)) {
-						cptV++;
-						listVoisin.push_back(*fv);
-					}
-				} else {
-					passage = true;
-				}
+			if ((itTwoHopNgbIp->back())->isEgal(ipToTest)) {
+				nbrNgb++;
+				listTmpNgbMpr.push_back(itTwoHopNgbIp->front());
 			}
-
 		}
-		if (cptV > nbrVoisMpr) {
-			ajoutMpr = true;
-			mpr = *v;
-			nbrVoisMpr = cptV;
-			vMpr.clear();
-			vMpr = listVoisin;
+		if (nbrNgb > nbrNgbMpr) {
+			nbrNgbMpr = nbrNgb;
+			tmpMpr = ipToTest;
+			listNgbMpr = listTmpNgbMpr;
 		}
 	}
-
-	mMyMprList.push_back(mpr);
-
-	for (std::list<IPv6>::iterator ipv = neighborIP.begin();
-			ipv != neighborIP.end(); ipv++) {
-		if (ipv->isEgal(&mpr)) {
-			neighborIP.erase(ipv);
-			break;
+	for (std::list<IPv6*>::iterator itNgbIp = listNgbMpr.begin();
+			itNgbIp != listNgbMpr.end(); itNgbIp++) {
+		IPv6* ipToTest = (*itNgbIp);
+		for (std::list<std::list<IPv6*> >::iterator itTwoHopNgbIp =
+				twoHopNeighborIP.begin();
+				itTwoHopNgbIp != twoHopNeighborIP.end(); itTwoHopNgbIp++) {
+			if (itTwoHopNgbIp->front()->isEgal(ipToTest)) {
+				itTwoHopNgbIp = twoHopNeighborIP.erase(itTwoHopNgbIp);
+			}
 		}
 	}
 
@@ -114,32 +122,48 @@ int Node::selectMpr(std::list<std::list<IPv6> > TwoHopList,
 	 */
 
 	mMutexTwoHopTable.lock();
-	for (std::list<Route>::iterator tableroute = mTwoHopNeighborTable.begin();
-			tableroute != mTwoHopNeighborTable.end(); tableroute++) {
-		for (std::list<IPv6>::iterator ipv = vMpr.begin(); ipv != vMpr.end();
-				ipv++) {
-			IPv6 ipToComp = *ipv;
-			if (tableroute->getIpDest()->isEgal(&ipToComp)) {
-				if (!tableroute->getNextHop()->isEgal(&mpr)) {
-					tableroute->setAction(DEL);
+	for (std::list<IPv6*>::iterator itNgbIp = listNgbMpr.begin();
+			itNgbIp != listNgbMpr.end(); itNgbIp++) {
+		IPv6* ipToTest = (*itNgbIp);
+		for (std::list<Route*>::iterator tableroute =
+				mTwoHopNeighborTable.begin();
+				tableroute != mTwoHopNeighborTable.end(); tableroute++) {
+			IPv6* nextHop = (*tableroute)->getNextHop();
+			IPv6* dest = (*tableroute)->getIpDest();
+			if (ipToTest->isEgal(dest)) {
+				if ((nextHop->isEgal(tmpMpr))) {
+					//(*tableroute)->setAction(ADD);
+				} else {
+					if ((*tableroute)->getAction() == ADD) {
+						tableroute = mTwoHopNeighborTable.erase(tableroute);
+					} else if ((*tableroute)->getAction() == NONE) {
+						(*tableroute)->setAction(DEL);
+					}
 				}
 			}
 		}
 	}
 	mMutexTwoHopTable.unlock();
 
-	for (std::list<std::list<IPv6> >::iterator vi = twoHopNeighborIP.begin();
-			vi != twoHopNeighborIP.end(); ++vi) {
-		IPv6 ipToComp = *(vi->begin());
-		for (std::list<IPv6>::iterator ipv = vMpr.begin(); ipv != vMpr.end();
-				ipv++) {
-			if (ipv->isEgal(&ipToComp)) {
-				vi = twoHopNeighborIP.erase(vi);
-				vi--;
+	mMyMprList.push_back(tmpMpr);
+	for (std::list<IPv6*>::iterator vi = listNgbMpr.begin();
+			vi != listNgbMpr.end(); ++vi) {
+		IPv6* ipToComp = (*vi);
+		for (std::list<std::list<IPv6*> >::iterator itTwoHop =
+				twoHopNeighborIP.begin(); itTwoHop != twoHopNeighborIP.end();
+				++itTwoHop) {
+			if (((*itTwoHop).front())->isEgal(ipToComp)) {
+				itTwoHop = twoHopNeighborIP.erase(itTwoHop);
 			}
 		}
 	}
-
+	for (std::list<IPv6*>::iterator vi = neighborIP.begin();
+			vi != neighborIP.end(); ++vi) {
+		if ((*vi)->isEgal(tmpMpr)) {
+			vi = neighborIP.erase(vi);
+			break;
+		}
+	}
 	if (twoHopNeighborIP.size() != 0) {
 		selectMpr(twoHopNeighborIP, neighborIP);
 	}
@@ -157,36 +181,60 @@ int Node::addNeighborTable(Route *route) {
 // maté le tableau dès qu'on tombe sur un NULL on ajoute
 // erreur si Plein
 // erreur si metric !=1
+	if (route->getIpDest()->isEgal(mMyIp)) {
+		std::cout << " Try to add route to myself \n";
+		return 4;
+	}
 	if (route->getMetric() != 1) {
 		std::cout << "ERROR : Add Neighbor with Metric > 1" << std::endl;
 		return 2;
 	} else {
+		mMutexTwoHopTable.lock();
+		std::list<Route*> list = mTwoHopNeighborTable;
+		mMutexTwoHopTable.unlock();
+
+		for (std::list<Route*>::iterator it = list.begin(); it != list.end();
+				++it) {
+			if ((*it)->getIpDest()->isEgal(route->getIpDest())) {
+				delTwoHopNeighbor((*it)->getIpDest(), (*it)->getNextHop());
+				break;
+			}
+		}
 		mMutexNeighborTable.lock();
-		for (std::list<Route>::iterator it = mNeighborTable.begin();
-				it != mNeighborTable.end(); ++it) {
-			if (it->getIpDest()->isEgal(route->getIpDest())) {
+		std::list<Route*> listNgb = mNeighborTable;
+		mMutexNeighborTable.unlock();
+		for (std::list<Route*>::iterator it = listNgb.begin();
+				it != listNgb.end(); ++it) {
+			if ((*it)->getIpDest()->isEgal(route->getIpDest())) {
+				std::cout << " route action  : " << route->getAction()
+						<< std::endl;
+				std::cout << " IP fucked ! : " << route->getIpDest()->toChar()
+						<< " hop : " << route->getNextHop()->toChar()
+						<< " metric : " << route->getMetric() << std::endl;
 				std::cout << "ERROR : Neighbor Already Exist" << std::endl;
-				mMutexNeighborTable.unlock();
 				return 3;
 			}
 		}
-		route->setAction(ADD);
-		mNeighborTable.push_back(*route);
+		//route->setAction(ADD);
+		mMutexNeighborTable.lock();
+		mNeighborTable.push_back(route);
 		mMutexNeighborTable.unlock();
+
 		return 0;
 	}
 	return 1;
 }
 
 int Node::addNeighbor(Route* route) {
-	if (addNeighborTable(route) == 0) {
-		mMutexIP.lock();
-		mNeighborIP.push_back(*route->getIpDest());
-		mMutexIP.unlock();
-		return 0;
+	int result = addNeighborTable(route);
+	if (result == 0) {
+		mMutexNeighborIP.lock();
+		mNeighborIP.push_back(route->getIpDest());
+		mMutexNeighborIP.unlock();
+		return result;
 	}
 	std::cout << "ERROR : Adding Neighbor Route\n";
-	return 1;
+	return result;
 
 }
 int Node::addNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
@@ -197,66 +245,93 @@ int Node::addNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
 
 int Node::addTwoHopNeighborTable(Route *route) {
 
+	if (route->getIpDest()->isEgal(mMyIp)) {
+		std::cout << " Try to add route to myself \n";
+		return 9;
+	}
 	if (route->getMetric() != 2) {
 		std::cout << "ERROR : Add Two Hop Neighbor with Metric != 2"
 				<< std::endl;
 		return 2;
 	} else {
+		bool destExist = false;
 		bool nextHopExist = false;
 		mMutexTwoHopTable.lock();
-		for (std::list<Route>::iterator it = mTwoHopNeighborTable.begin();
+		for (std::list<Route*>::iterator it = mTwoHopNeighborTable.begin();
 				it != mTwoHopNeighborTable.end(); ++it) {
-			if (it->getIpDest()->isEgal(route->getIpDest())) {
-				std::cout << "ERROR : Two Hop Neighbor Already Exist"
-						<< std::endl;
-				mMutexTwoHopTable.unlock();
-				return 3;
+			if ((*it)->getIpDest()->isEgal(route->getIpDest())) {
+
+				if ((*it)->getNextHop()->isEgal(route->getNextHop())) {
+					//std::cout << "ERROR : Two Hop Neighbor Already Exist"
+					//	<< std::endl;
+					mMutexTwoHopTable.unlock();
+					return 3;
+				}
+				destExist = true;
 			}
 		}
 		mMutexNeighborTable.lock();
-		for (std::list<Route>::iterator it = mNeighborTable.begin();
+		for (std::list<Route*>::iterator it = mNeighborTable.begin();
 				it != mNeighborTable.end(); ++it) {
-			if (it->getIpDest()->isEgal(route->getIpDest())) {
+			if ((*it)->getIpDest()->isEgal(route->getIpDest())) {
 				mMutexNeighborTable.unlock();
 				mMutexTwoHopTable.unlock();
 				return 4;
 			}
-			if (it->getIpDest()->isEgal(route->getNextHop())) {
+			if ((*it)->getIpDest()->isEgal(route->getNextHop())) {
 				nextHopExist = true;
 			}
 		}
 		mMutexNeighborTable.unlock();
 		if (nextHopExist) {
-			route->setAction(ADD);
-			mTwoHopNeighborTable.push_back(*route);
+			//route->setAction(ADD);
+			mTwoHopNeighborTable.push_back(route);
 			mMutexTwoHopTable.unlock();
+			if (destExist) {
+				return 5;
+			}
 			return 0;
 		} else {
 			std::cout << "ERROR : Hop to access Destination doesn't exists\n";
 			mMutexTwoHopTable.unlock();
-			return 5;
+			return 8;
 		}
 	}
 	return 1;
 }
 
 int Node::addTwoHopNeighbor(Route* route) {
-	std::list<IPv6> TwoHop;
+	std::list<IPv6*> TwoHop;
 	int result = addTwoHopNeighborTable(route);
 	if (result == 0) {
-		TwoHop.push_back(*route->getIpDest());
-		TwoHop.push_back(*route->getNextHop());
-		mMutexIP.lock();
+		TwoHop.push_back(route->getIpDest());
+		TwoHop.push_back(route->getNextHop());
+		mMutexTwoHopIP.lock();
 		mTwoHopNeighborIP.push_back(TwoHop);
+		std::list<std::list<IPv6*> > listTwoHop = mTwoHopNeighborIP;
+		mMutexTwoHopIP.unlock();
+		mMutexNeighborIP.lock();
+		std::list<IPv6*> nghb = mNeighborIP;
+		mMutexNeighborIP.unlock();
 		clearMpr();
-		selectMpr(mTwoHopNeighborIP, mNeighborIP);
-		mMutexIP.unlock();
-		return 0;
-	} else if (result == 4) {
-		return 0;
+		selectMpr(listTwoHop, nghb);
+		return result;
+	} else if (result == 5) {
+		TwoHop.push_back(route->getIpDest());
+		TwoHop.push_back(route->getNextHop());
+		mMutexTwoHopIP.lock();
+		mTwoHopNeighborIP.push_back(TwoHop);
+		std::list<std::list<IPv6*> > listTwoHop = mTwoHopNeighborIP;
+		mMutexTwoHopIP.unlock();
+		mMutexNeighborIP.lock();
+		std::list<IPv6*> nghb = mNeighborIP;
+		mMutexNeighborIP.unlock();
+		clearMpr();
+		selectMpr(listTwoHop, nghb);
+		return result;
 	}
-	std::cout << " ERROR : Adding TwoHop route" << std::endl;
-	return 1;
+	//std::cout << " ERROR : Adding TwoHop route" << std::endl;
+	return result;
 }
 int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
 		std::string iface) {
@@ -265,34 +340,36 @@ int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
 }
 
 int Node::addAdvertisedNeighbor(IPv6* ip) {
-	mMutexIP.lock();
-	for (std::list<IPv6>::iterator it = mAdvertisedNeighborList.begin();
-			it != mAdvertisedNeighborList.end(); it++) {
-		if (it->isEgal(ip)) {
-			mMutexIP.unlock();
-			return 0;
+	if (!(ip->isEgal(mMyIp))) {
+		mMutexAdvNeighborIP.lock();
+		for (std::list<IPv6*>::iterator it = mAdvertisedNeighborList.begin();
+				it != mAdvertisedNeighborList.end(); it++) {
+			if ((*it)->isEgal(ip)) {
+				mMutexAdvNeighborIP.unlock();
+				return 0;
+			}
 		}
+		mAdvertisedNeighborList.push_back(ip);
+		imMpr();
+		mMutexAdvNeighborIP.unlock();
 	}
-	mAdvertisedNeighborList.push_back(*ip);
-	imMpr();
-	mMutexIP.unlock();
 	return 1;
 }
 
 int Node::delAdvertisedNeighbor(IPv6* ip) {
-	mMutexIP.lock();
-	for (std::list<IPv6>::iterator it = mAdvertisedNeighborList.begin();
+	mMutexAdvNeighborIP.lock();
+	for (std::list<IPv6*>::iterator it = mAdvertisedNeighborList.begin();
 			it != mAdvertisedNeighborList.end(); it++) {
-		if ((*it).isEgal(ip)) {
-			mAdvertisedNeighborList.erase(it);
+		if ((*it)->isEgal(ip)) {
+			it = mAdvertisedNeighborList.erase(it);
 			if (mAdvertisedNeighborList.size() == 0) {
 				mMpr = false;
 			}
-			mMutexIP.unlock();
+			mMutexAdvNeighborIP.unlock();
 			return 1;
 		}
 	}
-	mMutexIP.unlock();
+	mMutexAdvNeighborIP.unlock();
 	return 0;
 }
 
@@ -302,35 +379,49 @@ int Node::delNeighbor(IPv6* ipToDelete) {
 	 * On place action de la route sur mNeighborTable a DEL
 	 */
 	mMutexNeighborTable.lock();
-	for (std::list<Route>::iterator it = mNeighborTable.begin();
+	for (std::list<Route*>::iterator it = mNeighborTable.begin();
 			it != mNeighborTable.end(); ++it) {
-		if (it->getIpDest()->isEgal(ipToDelete)) {
-			it->setAction(DEL);
+		if ((*it)->getIpDest()->isEgal(ipToDelete)) {
+			if ((*it)->getAction() == ADD) {
+				it = mNeighborTable.erase(it);
+			} else if ((*it)->getAction() == NONE) {
+				(*it)->setAction(DEL);
+			}
 			break;
 		}
 	}
 	mMutexNeighborTable.unlock();
-
+	delTwoHopNeighbor(ipToDelete, true);
 	/*
 	 * Supprime le neighbor de la liste des HopNgihborIP
 	 */
 	bool unlock = false;
-	mMutexIP.lock();
-	for (std::list<IPv6>::iterator it = mNeighborIP.begin();
+	mMutexNeighborIP.lock();
+	for (std::list<IPv6*>::iterator it = mNeighborIP.begin();
 			it != mNeighborIP.end(); ++it) {
-		if (it->isEgal(ipToDelete)) {
-			mNeighborIP.erase(it);
+		if ((*it)->isEgal(ipToDelete)) {
+			it = mNeighborIP.erase(it);
 			clearMpr();
-			selectMpr(mTwoHopNeighborIP, mNeighborIP);
+
+			std::list<IPv6*> nghb = mNeighborIP;
+			mMutexNeighborIP.unlock();
+			mMutexTwoHopIP.lock();
+
+			std::list<std::list<IPv6*> > hopNghb = mTwoHopNeighborIP;
+			mMutexTwoHopIP.unlock();
+
+			selectMpr(hopNghb, nghb);
 			unlock = true;
-			mMutexIP.unlock();
-			delAdvertisedNeighbor(ipToDelete);
+
+			if (delAdvertisedNeighbor(ipToDelete)) {
+				std::cout << " adv delete : " << ipToDelete->toChar()
+						<< std::endl;
+			}
+
 			return 0;
 		}
 	}
-	if (!unlock) {
-		mMutexIP.unlock();
-	}
+	mMutexNeighborIP.unlock();
 	std::cout << "ERROR : Neighbor not Found \n";
 	return 1;
 }
@@ -339,33 +430,56 @@ int Node::delNeighbor(Route* route) {
 	return delNeighbor(ip);
 }
 
-int Node::delTwoHopNeighbor(IPv6* ipToDelete) {
-	mMutexIP.lock();
-	for (std::list<std::list<IPv6> >::iterator it = mTwoHopNeighborIP.begin();
-			it != mTwoHopNeighborIP.end(); ++it) {
-		if ((it->front()).isEgal(ipToDelete)) {
-			IPv6 nextHop = it->back();
-			delTwoHopNeighbor(ipToDelete, &nextHop);
-			return 0;
+int Node::delTwoHopNeighbor(IPv6* ipToDelete, bool nxtHop) {
+	mMutexTwoHopIP.lock();
+	std::list<std::list<IPv6*> > list = mTwoHopNeighborIP;
+	mMutexTwoHopIP.unlock();
+	if (!nxtHop) {
+		for (std::list<std::list<IPv6*> >::iterator it = list.begin();
+				it != list.end(); ++it) {
+			if (((*it).front())->isEgal(ipToDelete)) {
+				IPv6* nextHop = (*it).back();
+				delTwoHopNeighbor(ipToDelete, nextHop);
+				return 0;
+			}
 		}
+	} else if (nxtHop) {
+		for (std::list<std::list<IPv6*> >::iterator it = list.begin();
+				it != list.end(); ++it) {
+			if (((*it).back())->isEgal(ipToDelete)) {
+				IPv6* dest = (*it).front();
+				std::cout << " DELETE node.Cpp : " << dest->toChar()
+						<< " hop : " << (*it).back()->toChar() << std::endl;
+				delTwoHopNeighbor(dest, ipToDelete);
+			}
+		}
+		return 0;
 	}
+
 	return 1;
 }
 
 int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
-// maté route.sIpDest du tableau
-// Remonter tout les élém en dessous
-// ajouter NULL a la derniere ligne
 	/*
 	 * Place l'action de la route sur mTwoHopNeighborTable a DEL
 	 */
+
 	mMutexTwoHopTable.lock();
-	for (std::list<Route>::iterator it = mTwoHopNeighborTable.begin();
+	for (std::list<Route*>::iterator it = mTwoHopNeighborTable.begin();
 			it != mTwoHopNeighborTable.end(); ++it) {
-		if (it->getIpDest()->isEgal(ipToDelete)
-				&& it->getNextHop()->isEgal(ipHopToDelete)) {
-			it->setAction(DEL);
-			break;
+		if ((*it)->getIpDest()->isEgal(ipToDelete)
+				&& (*it)->getNextHop()->isEgal(ipHopToDelete)) {
+			if ((*it)->getAction() == ADD) {
+				it = mNeighborTable.erase(it);
+				std::cout << " erase : " << ipToDelete->toChar()
+						<< " hop : " << ipHopToDelete->toChar() << std::endl;
+			} else if ((*it)->getAction() == NONE) {
+				std::cout << " ACTION to DEL : " << ipToDelete->toChar()
+						<< " hop : " << ipHopToDelete->toChar() << std::endl;
+				(*it)->setAction(DEL);
+				break;
+			}
+
 		}
 	}
 	mMutexTwoHopTable.unlock();
@@ -373,26 +487,27 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
 	 * Supprime le 2 hop neighbor de la liste des TwoHopNgihborIP
 	 */
 	bool unlock = false;
-	mMutexIP.lock();
-	for (std::list<std::list<IPv6> >::iterator it2 = mTwoHopNeighborIP.begin();
+	mMutexTwoHopIP.lock();
+	for (std::list<std::list<IPv6*> >::iterator it2 = mTwoHopNeighborIP.begin();
 			it2 != mTwoHopNeighborIP.end(); ++it2) {
-		std::list<IPv6> temp = *it2;
-		std::list<IPv6>::iterator tempIt = temp.begin();
-		if (tempIt->isEgal(ipToDelete)) {
-			++tempIt;
-			if (tempIt->isEgal(ipHopToDelete)) {
-				mTwoHopNeighborIP.erase(it2);
+		std::list<IPv6*> temp = (*it2);
+		IPv6* ip = temp.front();
+		if ((ip)->isEgal(ipToDelete)) {
+			if ((temp.back())->isEgal(ipHopToDelete)) {
+				it2 = mTwoHopNeighborIP.erase(it2);
+				std::list<std::list<IPv6*> > twoHop = mTwoHopNeighborIP;
+				mMutexTwoHopIP.unlock();
 				clearMpr();
-				selectMpr(mTwoHopNeighborIP, mNeighborIP);
+				mMutexNeighborIP.lock();
+				std::list<IPv6*> nghb = mNeighborIP;
+				mMutexNeighborIP.unlock();
+				selectMpr(twoHop, nghb);
 				unlock = true;
-				mMutexIP.unlock();
 				return 0;
 			}
 		}
 	}
-	if (!unlock) {
-		mMutexIP.unlock();
-	}
+	mMutexTwoHopIP.unlock();
 	std::cout << "ERROR : Two Hop Neighbor not Found \n";
 	return 1;
 }
@@ -438,7 +553,8 @@ std::string Node::bin2Hex(const std::string& s) {
 }
 
 std::string Node::macToIpv6() {
-	std::string commande = "ifconfig wlan0 | grep wlan0 | awk '$0 ~ /HWaddr/ { print $5 }'";
+	std::string commande =
+			"ifconfig wlan0 | grep wlan0 | awk '$0 ~ /HWaddr/ { print $5 }'";
 	char * cmd = (char*) commande.c_str();
 	// todo : renvoyer erreur si chaine vide
 	std::string result = getResCmd(cmd);
@@ -476,84 +592,128 @@ std::string Node::macToIpv6() {
 	// écrire un nombre dans le flux
 	enTeteIPv6Temp << EN_TETE_IPv6;
 	// récupérer une chaîne de caractères
-	std::string enTeteIPv6 = enTeteIPv6Temp.str()+"::";
+	std::string enTeteIPv6 = enTeteIPv6Temp.str() + "::";
 
 	IPv6.insert(0, enTeteIPv6);
 
 	return IPv6;
 }
 
-
 int Node::addDestTable(Route *route) {
-	for (std::list<IPv6>::iterator it = mNeighborIP.begin();
-			it != mNeighborIP.end(); it++) {
-		if (it->isEgal(route->getIpDest())) {
+	if (!(route->getIpDest()->isEgal(mMyIp))) {
+		mMutexNeighborIP.lock();
+		for (std::list<IPv6*>::iterator it = mNeighborIP.begin();
+				it != mNeighborIP.end(); it++) {
+			if ((*it)->isEgal(route->getIpDest())) {
+				mMutexNeighborIP.unlock();
+				return 0;
+			}
+		}
+		mMutexNeighborIP.unlock();
+		mMutexTwoHopIP.lock();
+		for (std::list<std::list<IPv6*> >::iterator it =
+				mTwoHopNeighborIP.begin(); it != mTwoHopNeighborIP.end();
+				it++) {
+			if (((*it).front())->isEgal(route->getIpDest())) {
+				mMutexTwoHopIP.unlock();
+				return 0;
+			}
+		}
+		mMutexTwoHopIP.unlock();
+		int result = updDestTable(route);
+		if (result == 1) {
+			mMutexDestTable.lock();
+			mDestTable.push_back(route);
+			mMutexDestTable.unlock();
+			mMutexDestIP.lock();
+			mDestIP.push_back((route->getIpDest()));
+			mMutexDestIP.unlock();
+			return 1;
+		} else if (result == 2) {
+			std::cout << " better route exist \n";
+			return 2;
+		} else if (result == 0) {
+			std::cout << " update route for a shorter one \n";
 			return 0;
 		}
+	} else {
+		std::cerr << " erreur adding my IP \n";
+		return 2;
 	}
-	for (std::list<std::list<IPv6> >::iterator it = mTwoHopNeighborIP.begin();
-			it != mTwoHopNeighborIP.end(); it++) {
-		if ((it->front()).isEgal(route->getIpDest())) {
-			return 0;
-		}
-	}
-	if (!updDestTable(route)) {
-		mDestTable.push_back(*route);
-		mDestIP.push_back(*(route->getIpDest()));
-	}
-	return 0;
+	return 10;
 }
 
 int Node::updDestTable(Route *route) {
-	std::list<Route>::iterator it = mDestTable.begin();
+	mMutexDestTable.lock();
 	IPv6 *ipToComp = route->getIpDest();
-	for (; it != mDestTable.end(); it++) {
-		if (it->getIpDest()->isEgal(ipToComp)) {
-			if (it->getMetric() > route->getMetric()) {
-				it->setRoute(route);
+	for (std::list<Route*>::iterator it = mDestTable.begin();
+			it != mDestTable.end(); it++) {
+		if ((*it)->getIpDest()->isEgal(ipToComp)) {
+			if ((*it)->getMetric() > route->getMetric()) {
+				route->setAction(UPD);
+				(*it)->setRoute(route);
+				mMutexDestTable.unlock();
 				return 0;
 			}
-			return 1;
+			mMutexDestTable.unlock();
+			return 2;
 		}
 	}
+	mMutexDestTable.unlock();
 	return 1;
 }
 
 int Node::delDestTable(Route *route) {
-	std::list<Route>::iterator it = mDestTable.begin();
-	IPv6 *ipToComp = route->getIpDest();
-	for (; it != mDestTable.end(); it++) {
-		if (it->getIpDest()->isEgal(ipToComp)) {
-			it->setAction(DEL);
+	mMutexDestTable.lock();
+	IPv6 *dest = route->getIpDest();
+	IPv6 *nextHop = route->getNextHop();
+	bool erase = false;
+	for (std::list<Route*>::iterator it = mDestTable.begin();
+			it != mDestTable.end(); it++) {
+		if ((*it)->getIpDest()->isEgal(dest)
+				&& (*it)->getIpDest()->isEgal(nextHop)) {
+			erase = true;
+			if ((*it)->getAction() == ADD) {
+				it = mNeighborTable.erase(it);
+			} else if ((*it)->getAction() == NONE) {
+				(*it)->setAction(DEL);
+			}
 			break;
 		}
 	}
-	for (std::list<IPv6>::iterator it = mDestIP.begin(); it != mDestIP.end();
-			it++) {
-		if (it->isEgal(route->getIpDest())) {
-			mDestIP.erase(it);
+	mMutexDestTable.unlock();
+	if (erase) {
+		mMutexDestIP.lock();
+		for (std::list<IPv6*>::iterator it = mDestIP.begin();
+				it != mDestIP.end(); it++) {
+			if ((*it)->isEgal(route->getIpDest())) {
+				it = mDestIP.erase(it);
+				mMutexDestIP.unlock();
+				return 0;
+			}
 		}
+		mMutexDestIP.unlock();
 	}
-	return 0;
+	std::cerr << " Error Deleting unexisting Destination\n";
+	return 1;
+
 }
 
 int Node::delDest(Route *route) {
-	mMutexDestTable.lock();
-	delDestTable(route);
-	mMutexDestTable.unlock();
-	return 0;
+	return delDestTable(route);
 }
 
 int Node::delDest(IPv6 *ip) {
-	for (std::list<Route>::iterator it = mDestTable.begin();
-			it != mDestTable.end(); it++) {
-		if (it->getIpDest()->isEgal(ip)) {
-			Route *r = &(*it);
-			delDest(r);
-			return 0;
+	mMutexDestTable.lock();
+	std::list<Route*> list = mDestTable;
+	mMutexDestTable.unlock();
+	for (std::list<Route*>::iterator it = list.begin(); it != list.end();
+			it++) {
+		if ((*it)->getIpDest()->isEgal(ip)) {
+			return delDest((*it));
 		}
-
 	}
+	std::cerr << "Fail to delete route with metric > 2 \n";
 	return 1;
 }
 

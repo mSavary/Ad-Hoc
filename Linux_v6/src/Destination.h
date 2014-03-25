@@ -31,6 +31,12 @@ class Destination {
 		inline IPv6* getIp() {
 			return mIP;
 		}
+		inline int getState(){
+			return mState;
+		}
+		inline int getMetric(){
+			return mMetric;
+		}
 		~Destination();
 
 	};

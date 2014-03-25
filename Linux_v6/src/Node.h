@@ -8,7 +8,6 @@
 //#ifndef NODE_H
 //#define NODE_H
 
-
 #include <iostream>
 #include <string>
 #include <stdio.h>
@@ -25,14 +24,9 @@
 #include "Tc.h"
 #include "Hello.h"
 
-
 class Node {
 private:
 
-
-	//TODO AdvertisedNeighbor : list IPv6
-	//todo func addAdvertise : ajoute un advertise neigbor
-	//todo fun delAdvertise(ip) : parcour la liste des advertise si trouve la meme que ip alors on la delete
 
 	/*
 	 * *attributes
@@ -41,11 +35,23 @@ private:
 	bool mMpr;
 	std::string mInterface;
 	IPv6 *mMyIp;
-	boost::thread mTimerHello, mTimerTc;
-	boost::mutex mMutexIP, mMutexTwoHopTable, mMutexNeighborTable,mMutexSystem,mMutexDestTable;
-	std::list<Route> mNeighborTable, mTwoHopNeighborTable, mDestTable;
-	std::list<IPv6> mNeighborIP, mMyMprList, mAdvertisedNeighborList, mDestIP;
-	std::list<std::list<IPv6> > mTwoHopNeighborIP;
+	boost::mutex mMutexMprIP,
+				mMutexNeighborIP,
+				mMutexAdvNeighborIP,
+				mMutexDestIP,
+				mMutexTwoHopIP,
+				mMutexTwoHopTable,
+				mMutexNeighborTable,
+				mMutexSystem,
+				mMutexDestTable;
+	std::list<Route*>   mNeighborTable,
+						mTwoHopNeighborTable,
+						mDestTable;
+	std::list<IPv6*> mNeighborIP,
+					 mMyMprList,
+					 mAdvertisedNeighborList,
+					 mDestIP;
+	std::list<std::list<IPv6*> > mTwoHopNeighborIP;
 
 	/*
 	 * Private methods
@@ -90,8 +96,8 @@ private:
 	 *
 	 * 	Look at the TwoHopNeighborIP and choose the node's MPR by adding the MPR to the mMyMprList
 	 */
-	int selectMpr(std::list<std::list<IPv6> > TwoHopList,
-			std::list<IPv6> NeighborList);
+	int selectMpr(std::list<std::list<IPv6*> > TwoHopList,
+			std::list<IPv6*> NeighborList);
 
 	/**
 	 * Func clearMpr()
@@ -129,6 +135,15 @@ private:
 	std::string bin2Hex(const std::string& s);
 
 	std::string setInterface();
+	/**
+	 * Func imMpr()
+	 *
+	 *   set mMpr to true to say if the node is MPR for someone ( call this function when node interface is in a received HELLO: MPR section)
+	 */
+
+	inline void imMpr() {
+		mMpr = true;
+	}
 
 public:
 
@@ -146,7 +161,7 @@ public:
 		return mMpr;
 	}
 
-	inline std::list<IPv6> getMprList() {
+	inline std::list<IPv6*> getMprList() {
 		return mMyMprList;
 	}
 
@@ -154,60 +169,56 @@ public:
 		return mInterface;
 	}
 
-	inline IPv6* getMyIp(){
+	inline IPv6* getMyIp() {
 		return mMyIp;
 	}
 
-	inline std::list<Route> getNeighborTable() {
+	inline std::list<Route*> getNeighborTable() {
 		return mNeighborTable;
 	}
-	inline std::list<Route> getTwoHopNeighborTable() {
+	inline std::list<Route*> getTwoHopNeighborTable() {
 		return mTwoHopNeighborTable;
 	}
 
-	inline std::list<IPv6> getNeighborIP() {
+	inline std::list<IPv6*> getNeighborIP() {
 		return mNeighborIP;
 	}
 
-	inline std::list<std::list<IPv6> > getTwoHopNeighborIP() {
+	inline std::list<IPv6*> getAdvertiseIP (){
+		return mAdvertisedNeighborList;
+	}
+
+	inline std::list<std::list<IPv6*> > getTwoHopNeighborIP() {
 		return mTwoHopNeighborIP;
 	}
 
-	inline void lockSystem(){
+	inline void lockSystem() {
 		mMutexSystem.lock();
 	}
 
-	inline void releaseSystem(){
+	inline void releaseSystem() {
 		mMutexSystem.unlock();
 	}
-	inline void setNeighborTable (std::list<Route> liste){
-		mNeighborTable=liste;
+	inline void setNeighborTable(std::list<Route*> liste) {
+		mNeighborTable = liste;
 	}
 
-	inline void setTwoHopNeighborTable (std::list<Route> liste){
-		mTwoHopNeighborTable=liste;
+	inline void setTwoHopNeighborTable(std::list<Route*> liste) {
+		mTwoHopNeighborTable = liste;
 	}
 
-	inline std::list<Route> getDestTable(){
+	inline std::list<Route*> getDestTable() {
 		return mDestTable;
 	}
 
-	inline void setDestTable(std::list<Route> liste){
-		mDestTable=liste;
+	inline void setDestTable(std::list<Route*> liste) {
+		mDestTable = liste;
 	}
 
-	inline std::list<IPv6> getDestIP(){
+	inline std::list<IPv6*> getDestIP() {
 		return mDestIP;
 	}
-	/**
-	 * Func imMpr()
-	 *
-	 *   set mMpr to true to say if the node is MPR for someone ( call this function when node interface is in a received HELLO: MPR section)
-	 */
 
-	inline void imMpr() {
-		mMpr = true;
-	}
 	/**
 	 * Func addNeighbor
 	 *	Add a neighbor to the mNeighborTable
@@ -248,7 +259,6 @@ public:
 	 */
 	int addAdvertisedNeighbor(IPv6* ip);
 
-
 	/**
 	 * Func delAdvertisedNeighbor
 	 * delete from the advertisedlist a neighbor which erase me from his mpr
@@ -282,7 +292,7 @@ public:
 
 	int delTwoHopNeighbor(Route* route);
 	int delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete);
-	int delTwoHopNeighbor(IPv6* ipToDelete);
+	int delTwoHopNeighbor(IPv6* ipToDelete, bool nextHop);
 
 	/**
 	 * Func macToIPv6
@@ -306,6 +316,11 @@ public:
 	int delDest(Route *route);
 	int delDest(IPv6 *ip);
 
+	inline int start() {
+		boost::thread TimerHello = boost::thread(&Node::sendHello, this);
+		boost::thread TimerTc = boost::thread(&Node::sendTc, this);
+		return 1;
+	}
 };
 
 //#endif // CLIENT_H

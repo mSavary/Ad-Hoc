@@ -5,43 +5,46 @@
 
 Listener::~Listener() {
 	delete mIoService;
-	delete mRemoteEndpoint;
-	delete mSenderEndpoint;
 	delete mSocket;
 }
 
 Listener::Listener() {
 	try {
 		this->mIoService = new boost::asio::io_service();
-		this->mRemoteEndpoint = new boost::asio::ip::udp::endpoint(
-				boost::asio::ip::udp::v6(), 7171);
-		this->mSocket = new boost::asio::ip::udp::socket(*this->mIoService,
-				*this->mRemoteEndpoint);
-		mSem_cons= new boost::interprocess::interprocess_semaphore(MIN_LENGTH);
-		mSem_prod= new boost::interprocess::interprocess_semaphore(MAX_LENGTH);
+		boost::asio::ip::udp::resolver resolver(*mIoService);
+		boost::asio::ip::udp::resolver::query query1(boost::asio::ip::udp::v6(),
+				"698");
+
+		mRemoteEndpoint = *resolver.resolve(query1);
+		mSocket = new boost::asio::ip::udp::socket(*this->mIoService);
+		mSem_cons = new boost::interprocess::interprocess_semaphore(MIN_LENGTH);
+		mSem_prod = new boost::interprocess::interprocess_semaphore(MAX_LENGTH);
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
 }
 
-int Listener::run(){
+int Listener::run() {
 	boost::thread threadListen = boost::thread(&Listener::listenSocket, this);
 	return 1;
 }
 
 void Listener::listenSocket() {
 	boost::system::error_code error;
+	boost::asio::ip::udp::endpoint sender_endpoint;
+	mSocket->open(boost::asio::ip::udp::v6());
+	mSocket->bind(mRemoteEndpoint);
 	try {
 		for (;;) {
 			// P() du producteur (initialisé a MAX_LENGHT)
 			mSem_prod->wait();
 			boost::array<char, BUFF_SIZE> recvBuf;
 			size_t len = mSocket->receive_from(boost::asio::buffer(recvBuf),
-					*mRemoteEndpoint, 0, error);
+					sender_endpoint);
 			if (error && error != boost::asio::error::message_size)
 				throw boost::system::system_error(error);
-				
-			std::string address =  mRemoteEndpoint->address().to_string();
+
+
 
 			// future stored message
 			Message * msg;
@@ -83,18 +86,17 @@ void Listener::listenSocket() {
 			temp = temp + 1;
 
 			// store hopCount (1b)
-			uint8_t hopCount = (*(uint8_t*) temp);
+			uint8_t hopCount = ((uint8_t) *temp);
 			temp = temp + 1;
 
 			// store MessageSequenceNumber
-			uint16_t messageSequenceNumber = (*(uint16_t*) temp);
+			uint16_t messageSequenceNumber = ((uint16_t) *temp);
 			temp = temp + 2;
 
-			if (messageType == HELLO_MESSAGE) {
 
-				Hello* hMH = new Hello(packetLength, packetSequenceNumber,
-						messageType, vTime, messageSize, originatorAddress,
-						timeToLive, hopCount, messageSequenceNumber);
+			if (messageType == HELLO_TYPE) {
+				uint8_t hTime, willingness;
+				std::list<HelloNeighborList*> listhNl;
 				/*
 				 HELLO HEADER  :
 				 |Reserved(16 Bits)| Htime(8Bits)|Willingness(8Bits)|
@@ -102,13 +104,12 @@ void Listener::listenSocket() {
 				//hMH->reserved = *(uint16_t*)temp;
 				temp += 2;
 
-				hMH->setHTime(*(uint8_t*) temp);
+				hTime = ((uint8_t) *temp);
 				++temp;
-				hMH->setWillingness(*(uint8_t*) temp);
+				willingness = ((uint8_t) *temp);
 				++temp;
 				uint16_t compt = 0; //4
-
-				while (compt < messageSize - 28) {
+				while (compt < (messageSize - 20)) {
 
 					//
 					uint8_t linkCode = (uint8_t) *temp;
@@ -119,66 +120,71 @@ void Listener::listenSocket() {
 
 					uint16_t linkMessageSize = *(uint16_t*) temp;
 					temp += 2;
-
 					int nb = (linkMessageSize - 4) / 16;
-					int i = 0;
-					std::list<IPv6> listIp;
-					for (; i < nb; i++) {
+					std::list<IPv6*> listIp;
+					while (nb > 0) {
+						nb--;
 						IPv6* currentV6 = new IPv6(
-								*(unsigned short*) (temp + 8),
-								*(unsigned short*) (temp + 10),
-								*(unsigned short*) (temp + 12),
-								*(unsigned short*) (temp + 14));
+								(*(unsigned short*) (temp + 8)),
+								(*(unsigned short*) (temp + 10)),
+								(*(unsigned short*) (temp + 12)),
+								(*(unsigned short*) (temp + 14)));
 						temp = temp + 16; //for each address ipv6 we add 16
 
 						//hMH->neighbors->neighborsAddrList.push_front(*currentV6);
 						//hNL->neighborsAddrList.emplace_back(*currentV6);
-						listIp.push_back(*currentV6);
+						listIp.push_back(currentV6);
 					}
-					HelloNeighborList* hNL = new HelloNeighborList(linkCode,linkMessageSize,listIp);
+					HelloNeighborList* hNL = new HelloNeighborList(linkCode,
+							listIp);
+
 					//compt+=hMH->neighbors->linkMessageSize;
 					compt += linkMessageSize;
-
-					hMH->setNeighbors(hNL);
+					listhNl.push_back(hNL);
 				}
+
+				Hello* hMH = new Hello(willingness, hTime, packetLength,
+						packetSequenceNumber, messageType, vTime, messageSize,
+						originatorAddress, timeToLive, hopCount,
+						messageSequenceNumber, listhNl);
 				msg = hMH;
 
-			} else if (messageType == Tc_MESSAGE) {
-				Tc* tMH = new Tc(packetLength, packetSequenceNumber,
-						messageType, vTime, messageSize, originatorAddress,
-						timeToLive, hopCount, messageSequenceNumber,address);
+			} else if (messageType == TC_TYPE) {
+				std::string address = sender_endpoint.address().to_string();
+				//CHEAT todo
+				address = address.substr(4,address.length());
+				address.insert(0,"2014");
 
-				tMH->setANSN(*(uint16_t*) temp);
+
+
+				uint16_t Ansn;
+				std::list<IPv6*> advertisedList;
+
+				Ansn = (*(uint16_t*) temp);
 				temp += 2;
 				// reserved zone
 				temp += 2;
-
-				uint16_t nb = (messageSize - 28) / 16;
-				uint16_t i = 0;
-				for (; i < nb; i++) {
+				uint16_t nb = (messageSize - 24) / 16;
+				while (nb>0) {
 					IPv6* currentV6 = new IPv6(*(unsigned short*) (temp + 8),
 							*(unsigned short*) (temp + 10),
 							*(unsigned short*) (temp + 12),
 							*(unsigned short*) (temp + 14));
 					temp = temp + 16; //for each address ipv6 we add 16
-					tMH->setAdvertisedNeighborMainAddress(currentV6);
+					advertisedList.push_back(currentV6);
+					nb--;
 				}
+				Tc* tMH = new Tc(packetLength, packetSequenceNumber,
+						messageType, vTime, messageSize, originatorAddress,
+						timeToLive, hopCount, messageSequenceNumber, Ansn,address,advertisedList);
 				msg = (Message*) tMH;
 			}
-
-			/*msg->printData();
-			if (messageType == HELLO_MESSAGE) {
-				(*(Hello*) msg).printData();
-			} else if (messageType == Tc_MESSAGE) {
-				(*(Tc*) msg).printData();
-			}*/
 
 			//Bloque accès a la liste
 			mProtectList.lock();
 			//si + de 10 elem dans la liste on produit rien
 
-			receptionMsg(msg);
-			
+			mListMsg.push_back(msg);
 			mProtectList.unlock();
 
 			// V() du conso
@@ -190,21 +196,16 @@ void Listener::listenSocket() {
 	}
 }
 
-void Listener::receptionMsg(Message* msg) {
-
-	mListMsg.push_back(*msg);
-}
-
-Message Listener::getMsg() {
+Message* Listener::getMsg() {
 	// P() du conso
 	mSem_cons->wait();
 
 	//bloque la liste
 	mProtectList.lock();
+	Message *message = mListMsg.front();
 
-	Message message = mListMsg.front();
 	mListMsg.pop_front();
-	
+
 	// libère la liste
 	mProtectList.unlock();
 
