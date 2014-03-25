@@ -1,3 +1,35 @@
+/*
+ * main.cpp
+ *
+ *  Created on: 20 mars 2014
+ *      Author: Joran LeCallonec & Savary Maxime & Merlet Céline
+ */
+
+/*
+ * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
+ *  network.
+ *
+ * Copyright (c) 2014-2014 Gilles Guette <>
+ * Copyright (c) 2014-2014 ISTIC http://www.istic.univ-rennes1.fr/
+ * Copyright (c) 2014-2014 SUPELEC http://www.supelec.fr/rennes
+ *
+ * See the AUTHORS or Authors.txt file for copyright owners and
+ * contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <iostream>
 #include <string>
 #include <stdio.h>
@@ -9,15 +41,25 @@
 #include "Tc.h"
 #include "Message.h"
 #include "Listener.h"
-//#include "Node.h"
 #include "Destination.h"
 #include "RoutingTable.h"
 #include <boost/thread/mutex.hpp>
-
+/**
+ * Global Objects
+ *
+ */
 Node *mNode;
 std::list<Destination*> mDestination;
 boost::mutex mMutexDest;
 RoutingTable * kernelTable;
+
+/**
+ * FUNC taitementHello
+ *
+ * 		Analyze Hello informations and apply every change to the kernel routing table
+ * 	@params msg the message to analyze
+ */
+
 int traitementHello(Hello* msg) {
 	IPv6* origIp = msg->getOriginatorAddress();
 	if (origIp->isEgal(mNode->getMyIp())) {
@@ -55,7 +97,7 @@ int traitementHello(Hello* msg) {
 			mDestination.push_back(dest);
 			mMutexDest.unlock();
 		} else {
-			std::cout << " rendu de addngb : "<< result <<std::endl;
+			std::cout << " rendu de addngb : " << result << std::endl;
 		}
 	}
 	find = false;
@@ -151,9 +193,16 @@ int traitementHello(Hello* msg) {
 		}
 	}
 
-	return 0;
+	return 1;
 }
 
+/**
+ * FUNC traitementTc
+ *
+ * 		Analyze Tc informations and apply every change to the kernel routing table
+ *
+ * @params msg The message to analyze
+ */
 int traitementTc(Tc* msg) {
 	IPv6* origIp = msg->getOriginatorAddress();
 	IPv6* fromIp = msg->getForwarder();
@@ -221,6 +270,12 @@ int traitementTc(Tc* msg) {
 	return 0;
 }
 
+/**
+ * FUNC checkDestination
+ *
+ * 		Check if a Destination we add before reach out of his life time
+ * 		and then notify to delete it if necessary
+ */
 int checkDestination() {
 	while (1) {
 		sleep(NEIGHB_HOLD_TIME);
@@ -287,6 +342,12 @@ int checkDestination() {
 	}
 	return 0;
 }
+
+/**
+ * FUNC runKernel
+ *
+ * 		Every Hello interval apply or delete route that changes.
+ */
 int runKernel() {
 	while (1) {
 		sleep(HELLO_INTERVAL);
@@ -299,7 +360,11 @@ int runKernel() {
 	}
 	return 0;
 }
-
+/**
+ * FUNC main
+ *
+ * 		listen the network and get the message we receive.
+ */
 int main() {
 
 	Listener * Listen = new Listener();

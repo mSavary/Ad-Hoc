@@ -1,0 +1,45 @@
+Ad-Hoc Networks development team
+================================
+
+## Copyright owners
+
+- Gilles Guette
+  - Copyright © 2014-2014
+  -Mail
+
+- ISTIC
+  - Copyright © 2014-2014
+  - UFR Informatique - Électronique
+  - http://www.istic.univ-rennes1.fr/
+
+- SUPELEC
+  - Copyright © 2014-2014
+  - http://www.supelec.fr/rennes
+
+## Authors
+
+### Integrator / Release manager
+
+- Merlet Céline <>
+- Le Callonec Joran <>
+- Savary Maxime <maxime.sav@gmail.com>
+
+
+### Main programmer and founder
+
+- Savary Maxime <maxime.sav@gmail.com>
+- Chahal Karim <>
+
+
+### Contributors
+ 
+- Karim Chahal
+- Zheng Jiang
+- Joran Le Callonec
+- Efflam Lemaillet
+- Jitao Li
+- Celine Merlet
+- Mme. Aminatou Mohamadou
+- Alban Ngoma
+- Maxime Savary <maxime.sav@gmail.com>
+- Corentin Soriot

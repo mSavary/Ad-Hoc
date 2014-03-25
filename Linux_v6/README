@@ -1,0 +1,51 @@
+/******************************************************************/
+/********************AD-HOC Networks v 1.0*************************/
+/******************************************************************/
+
+See AUTHORS and COPYRIGHT for the list of contributors and license informations.
+
+/********
+/**REQUIREMENTS
+/********
+
+	Operating system : Ubuntu-base Linux Operating-system
+	Library : boost at least v1.53.0 ( see boost.org)
+	WiFi : Setting your workstation enable for Ad-Hoc ( see src/BootScript.pl)
+	You MUST be ROOT
+	
+	
+/*******
+/**GETTING THE CODE
+/*******
+
+	GitHub : git clone https://github.com/mSavary/Ad-Hoc.git
+	
+	Once you have met requirements, compiling and installing is simple:
+		cd Ad-Hoc/src/
+		g++ *.h *.cpp -lboost_system -lboost_thread -lpthread -O3 -o AdHoc
+
+/*******
+/**LICENSE
+/*******
+
+	This software in GPLv3 or later. See the file COPYING. Some files are under a different license.
+	Check the headers for the copyright info.
+	
+/******
+/**USAGE
+/******
+
+		AD-HOC Networks is made to handle the kernel routing table to be able to join a whole network 
+		without any router or switch base on OLSR (rfc 3626).
+		
+		To configure your PC for running Ad-Hoc Networks :
+			ifconfig /*Your Wifi Interface*/
+		look for your inet6 addr : fe80::a:a:a:a and copy the last 4 scope here : a:a:a:a
+		then run :
+			cd Ad-Hoc/Linux_v6/src/
+			./BootScript /*Your Wifi Interface*/ 2014::/*Paste what you copy before*/
+			for example : ./BootScript wlan0 2014::a:a:a:a
+			
+		Your PC will automatically restart. 
+		
+		Then you can run Ad-Hoc/Linux_v6/src/AdHoc

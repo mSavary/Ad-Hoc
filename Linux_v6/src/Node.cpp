@@ -1,3 +1,36 @@
+/*
+ * Node.cpp
+ *
+ *  Created on: 1 Février 2014
+ *      Author: Joran LeCallonec & Savary Maxime
+ */
+
+/*
+ * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
+ *  network.
+ *
+ * Copyright (c) 2014-2014 Gilles Guette <>
+ * Copyright (c) 2014-2014 ISTIC http://www.istic.univ-rennes1.fr/
+ * Copyright (c) 2014-2014 SUPELEC http://www.supelec.fr/rennes
+ *
+ * See the AUTHORS or Authors.txt file for copyright owners and
+ * contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #include "Node.h"
 
 Node::Node() {
@@ -33,15 +66,15 @@ void Node::sendHello() {
 			}
 		}
 		mMutexNeighborIP.unlock();
-		//std::cout << "ENVOI HELLO ; \n";
 		sleep(HELLO_INTERVAL);
 		int pqSeqNum = 1, mgSeqNum = 1;
 		Hello *msg = new Hello(pqSeqNum, mMyIp, mgSeqNum, nghb, mpr);
 		msg->printData();
 		msg->sendHello();
 	}
-	/* appeler fonctions de construction et d'envoi de message Hello */
 }
+
+
 
 void Node::sendTc() {
 	while (1) {
@@ -117,10 +150,6 @@ int Node::selectMpr(std::list<std::list<IPv6*> > TwoHopList,
 		}
 	}
 
-	/*
-	 * on place les route a twoHOP suprimé a supprimé sur la route systeme !
-	 */
-
 	mMutexTwoHopTable.lock();
 	for (std::list<IPv6*>::iterator itNgbIp = listNgbMpr.begin();
 			itNgbIp != listNgbMpr.end(); itNgbIp++) {
@@ -178,9 +207,6 @@ std::string Node::setInterface() {
 }
 
 int Node::addNeighborTable(Route *route) {
-// maté le tableau dès qu'on tombe sur un NULL on ajoute
-// erreur si Plein
-// erreur si metric !=1
 	if (route->getIpDest()->isEgal(mMyIp)) {
 		std::cout << " Try to add route to myself \n";
 		return 4;
@@ -215,7 +241,6 @@ int Node::addNeighborTable(Route *route) {
 				return 3;
 			}
 		}
-		//route->setAction(ADD);
 		mMutexNeighborTable.lock();
 		mNeighborTable.push_back(route);
 		mMutexNeighborTable.unlock();
@@ -284,7 +309,6 @@ int Node::addTwoHopNeighborTable(Route *route) {
 		}
 		mMutexNeighborTable.unlock();
 		if (nextHopExist) {
-			//route->setAction(ADD);
 			mTwoHopNeighborTable.push_back(route);
 			mMutexTwoHopTable.unlock();
 			if (destExist) {
@@ -330,7 +354,6 @@ int Node::addTwoHopNeighbor(Route* route) {
 		selectMpr(listTwoHop, nghb);
 		return result;
 	}
-	//std::cout << " ERROR : Adding TwoHop route" << std::endl;
 	return result;
 }
 int Node::addTwoHopNeighbor(IPv6* ipDest, IPv6* nextHop, int metric,
@@ -375,9 +398,6 @@ int Node::delAdvertisedNeighbor(IPv6* ip) {
 
 int Node::delNeighbor(IPv6* ipToDelete) {
 
-	/*
-	 * On place action de la route sur mNeighborTable a DEL
-	 */
 	mMutexNeighborTable.lock();
 	for (std::list<Route*>::iterator it = mNeighborTable.begin();
 			it != mNeighborTable.end(); ++it) {
@@ -392,9 +412,6 @@ int Node::delNeighbor(IPv6* ipToDelete) {
 	}
 	mMutexNeighborTable.unlock();
 	delTwoHopNeighbor(ipToDelete, true);
-	/*
-	 * Supprime le neighbor de la liste des HopNgihborIP
-	 */
 	bool unlock = false;
 	mMutexNeighborIP.lock();
 	for (std::list<IPv6*>::iterator it = mNeighborIP.begin();
@@ -460,9 +477,6 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete, bool nxtHop) {
 }
 
 int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
-	/*
-	 * Place l'action de la route sur mTwoHopNeighborTable a DEL
-	 */
 
 	mMutexTwoHopTable.lock();
 	for (std::list<Route*>::iterator it = mTwoHopNeighborTable.begin();
@@ -483,9 +497,6 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
 		}
 	}
 	mMutexTwoHopTable.unlock();
-	/*
-	 * Supprime le 2 hop neighbor de la liste des TwoHopNgihborIP
-	 */
 	bool unlock = false;
 	mMutexTwoHopIP.lock();
 	for (std::list<std::list<IPv6*> >::iterator it2 = mTwoHopNeighborIP.begin();
@@ -556,12 +567,10 @@ std::string Node::macToIpv6() {
 	std::string commande =
 			"ifconfig wlan0 | grep wlan0 | awk '$0 ~ /HWaddr/ { print $5 }'";
 	char * cmd = (char*) commande.c_str();
-	// todo : renvoyer erreur si chaine vide
 	std::string result = getResCmd(cmd);
 	std::string IPv6;
 	if (result.empty()) {
 		std::cout << "MAC adress not found\n";
-		//todo erreur
 	}
 
 	// reformat to IPv6 notation
