@@ -13,7 +13,7 @@ Tc::Tc(uint16_t packetSequenceNumber, IPv6 * originatorAddress,
 	mPacketLength = 0;
 	mPacketSequenceNumber = packetSequenceNumber;
 	mMessageType = TC_TYPE;
-	mVTime = C_TIME * (1 + a / 16) * pow(2, b);// todo a et B ?
+	mVTime = C_TIME * (1 + a / 16) * pow(2, b); // todo a et B ?
 	mMessageSize = 0;
 	mOriginatorAddress = originatorAddress;
 	mTimeToLive = 255;
@@ -29,7 +29,7 @@ Tc::Tc(uint16_t packetSequenceNumber, IPv6 * originatorAddress,
 Tc::Tc(uint16_t packetLength, uint16_t packetSequenceNumber,
 		uint8_t messageType, uint8_t vTime, uint16_t messageSize,
 		IPv6 * originatorAddress, uint8_t timeToLive, uint8_t hopCount,
-		uint16_t messageSequenceNumber,uint16_t Ansn, std::string ip,
+		uint16_t messageSequenceNumber, uint16_t Ansn, std::string ip,
 		std::list<IPv6*> advertisedList) :
 		Message() {
 	mPacketLength = packetLength;
@@ -98,7 +98,7 @@ int Tc::sendTc() {
 	// IPV6
 	int c = 8;
 	for (int y = 0; y < 8; y++) {
-		*(uint16_t*) (send_buf + c) = mOriginatorAddress->getScope(y);
+		*(uint16_t*) (send_buf + c) = htons(mOriginatorAddress->getScope(y));
 		c += 2;
 	}
 	//Time To Live
@@ -106,13 +106,13 @@ int Tc::sendTc() {
 	//HOP COUNT
 	*(send_buf + 25) = mHopCount;
 	//Message Sequence Number
-	*(uint16_t*) (send_buf + 26) = mMessageSequenceNumber;
+	*(uint16_t*) (send_buf + 26) = htons(mMessageSequenceNumber);
 
 	//Tc MESSAGE :
 	// ANSN
-	*(uint16_t*) (send_buf + 28) = mANSN;
+	*(uint16_t*) (send_buf + 28) = htons(mANSN);
 	// IPV6 : AdvertisedNeighborMainAddress 
-	*(uint16_t*) (send_buf + 30) = mReserved;
+	*(uint16_t*) (send_buf + 30) = htons(mReserved);
 
 	c = 32;
 //todo : scope 0/1/2/3 IP !!
@@ -120,30 +120,30 @@ int Tc::sendTc() {
 			it != mAdvertisedNeighborMainAddress.end(); it++) {
 		std::cout << "push : " << (*it)->toChar() << std::endl;
 		for (int j = 0; j < 8; j++) {
-			*(uint16_t*) (send_buf + c) = (*it)->getScope(j);
+			*(uint16_t*) (send_buf + c) = htons((*it)->getScope(j));
 			c += 2;
 		}
 	}
 
-	uint16_t TcSize = (mAdvertisedNeighborMainAddress.size()*16)+4;
+	uint16_t TcSize = (mAdvertisedNeighborMainAddress.size() * 16) + 4;
 	std::cout << "Taille1 = " << mAdvertisedNeighborMainAddress.size()
 			<< std::endl;
 	mMessageSize = TcSize + 20;
-	mPacketLength = mMessageSize + 4;	//2o=32+mAdvertisedNeighborMainAddress.size()
+	mPacketLength = mMessageSize + 4;//2o=32+mAdvertisedNeighborMainAddress.size()
 
 	//packetHeader
 	// packetLength
-	*(uint16_t*) send_buf = mPacketLength;
+	*(uint16_t*) send_buf = htons(mPacketLength);
 	// PacketSequenceNumber
-	*(uint16_t*) (send_buf + 2) = mPacketSequenceNumber;
+	*(uint16_t*) (send_buf + 2) = htons(mPacketSequenceNumber);
 
 	//messageHeader
 	// messageType 
-	* (send_buf + 4) = mMessageType;
+	*(send_buf + 4) = mMessageType;
 	//Vtime
-	* (send_buf + 5) = mVTime;
+	*(send_buf + 5) = mVTime;
 	// messageSize
-	*(uint16_t*) (send_buf + 6) = mMessageSize;
+	*(uint16_t*) (send_buf + 6) = htons(mMessageSize);
 
 	std::string container(send_buf, c);
 	boost::asio::io_service io_service;

@@ -68,7 +68,6 @@ private:
 	uint16_t mLinkMessageSize;/*!<The size of the link message.*/
 	std::list<IPv6*> mNeighborsAddrList;/*!< list of neighbor node address neighbor node.*/
 
-/*!<*/
 public:
 
 	/*!
@@ -129,6 +128,7 @@ public:
 			uint16_t messageSequenceNumber, std::list<IPv6*> neighborList,
 			std::list<IPv6*> mprList)
 	 * \brief Create your paquet Hello
+	 * TODO \param !
 	 */
 	Hello(uint16_t packetSequenceNumber, IPv6 * originatorAdress,
 			uint16_t messageSequenceNumber, std::list<IPv6*> neighborList,
@@ -141,6 +141,7 @@ public:
 			uint8_t hopCount, uint16_t messageSequenceNumber,
 			std::list<HelloNeighborList*> neighbors)
 	 * \brief Create your paquet Hello
+	 * TODO \param !
 	 */
 	Hello(uint8_t willingness, uint8_t hTime, uint16_t packetLength,
 			uint16_t packetSequenceNumber, uint8_t messageType, uint8_t vTime,
@@ -179,6 +180,7 @@ public:
 	/*!
 	 * \fn void setReserved(uint16_t reserved)
 	 * \brief Replace the reserved by a new one
+	 * TODO \param !
 	 */
 	void setReserved(uint16_t reserved);
 
@@ -186,18 +188,21 @@ public:
 	/*!
 	 * \fn void setHTime(uint8_t n)
 	 * \brief Replace the HTime by a new one
+	 * TODO \param !
 	 */
 	void setHTime(uint8_t n);
 
 	/*!
 	 * \fn void setWillingness(uint8_t n)
 	 * \brief Replace the Willingness by a new one
+	 * TODO \param !
 	 */
 	void setWillingness(uint8_t n);
 
 	/*!
 	 * \fn void setNeighbors(HelloNeighborList* n)
 	 * \brief Replace the Neighbor list by a new one
+	 * TODO \param !
 	 */
 	void setNeighbors(HelloNeighborList* n);
 

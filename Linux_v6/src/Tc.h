@@ -2,7 +2,7 @@
  * \file Node.h
  *
  * \date 1 Février 2014
- * \author Aminatou Mohamadou et Corentin Soriot
+ * \author Aminatou Mohamadou & Corentin Soriot
  */
 
 /*

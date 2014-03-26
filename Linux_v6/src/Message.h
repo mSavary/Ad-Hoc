@@ -83,6 +83,7 @@ public:
 			IPv6* originatorAddress, uint8_t hopCount,
 			uint16_t messageSequenceNumber)
 	 * \brief Create your Message
+	 * TODO \param !
 	 */
 	Message(uint16_t packetSequenceNumber, uint8_t messageType,
 			IPv6* originatorAddress, uint8_t hopCount,
@@ -94,6 +95,7 @@ public:
 			IPv6 * originatorAdress, uint8_t timeToLive, uint8_t hopCount,
 			uint16_t messageSequenceNumber)
 	 * \brief Create your Message
+	 * TODO \param !
 	 */
 	Message(uint16_t packetLength, uint16_t packetSequenceNumber,
 			uint8_t messageType, uint8_t vTime, uint16_t messageSize,
@@ -168,54 +170,63 @@ public:
 	/*!
 	 * \fn void setPacketLength(uint16_t n)
 	 * \brief Replace the PacketLength by a new one
+	 * TODO \param !
 	 */
 	void setPacketLength(uint16_t n);
 
 	/*!
 	 * \fn void setPacketSequenceNumber(uint16_t n)
 	 * \brief Replace the PacketSequenceNumber by a new one
+	 * TODO \param !
 	 */
 	void setPacketSequenceNumber(uint16_t n);
 
 	/*!
 	 * \fn void setMessageType(uint8_t n)
 	 * \brief Replace the MessageType by a new one
+	 * TODO \param !
 	 */
 	void setMessageType(uint8_t n);
 
 	/*!
 	 * \fn void setVTime(uint8_t n)
 	 * \brief Replace the VTime by a new one
+	 * TODO \param !
 	 */
 	void setVTime(uint8_t n);
 
 	/*!
 	 * \fn void setMessageSize(uint16_t n)
 	 * \brief Replace the MessageSize by a new one
+	 * TODO \param !
 	 */
 	void setMessageSize(uint16_t n);
 
 	/*!
 	 * \fn void setOriginatorAddress(IPv6* n)
 	 * \brief Replace the OriginatorAddress by a new one
+	 * TODO \param !
 	 */
 	void setOriginatorAddress(IPv6* n);
 
 	/*!
 	 * \fn void setTimeToLive(uint8_t n)
 	 * \brief Replace the TimeToLive by a new one
+	 * TODO \param !
 	 */
 	void setTimeToLive(uint8_t n);
 
 	/*!
 	 * \fn void setHopCount(uint8_t n)
 	 * \brief Replace the HopCount by a new one
+	 * TODO \param !
 	 */
 	void setHopCount(uint8_t n);
 
 	/*!
 	 * \fn void setMessageSequenceNumber(uint16_t n)
 	 * \brief Replace the MessageSequenceNumber by a new one
+	 * TODO \param !
 	 */
 	void setMessageSequenceNumber(uint16_t n);
 

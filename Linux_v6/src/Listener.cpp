@@ -1,10 +1,10 @@
-/**
- * Listener.cpp
+/*!
+ * \file Listener.cpp
  *
- *      \author Efflam Lemailler & Céline Merlet
+ *      \author Efflam Lemaillet & Céline Merlet
  */
 
-/**
+/*
  * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
  *  network.
  *
@@ -28,7 +28,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include "Listener.h"
 
@@ -76,17 +75,16 @@ void Listener::listenSocket() {
 			if (error && error != boost::asio::error::message_size)
 				throw boost::system::system_error(error);
 
-
 			Message * msg;
 
 			char* temp;
 			char * originAddr = temp;
 			temp = recvBuf.data();
 
-			uint16_t packetLength = (*(uint16_t*) temp);
+			uint16_t packetLength = ntohs((*(uint16_t*) temp));
 			temp += 2;
-			
-			uint16_t packetSequenceNumber = (*(uint16_t*) temp);
+
+			uint16_t packetSequenceNumber = ntohs((*(uint16_t*) temp));
 			temp += 2;
 
 			uint8_t messageType = (*(uint8_t*) temp);
@@ -96,13 +94,14 @@ void Listener::listenSocket() {
 			uint8_t vTime = (*(uint8_t*) temp);
 			temp = temp + 1;
 
-			uint16_t messageSize = (*(uint16_t*) temp);
+			uint16_t messageSize = ntohs((*(uint16_t*) temp));
 			temp += 2;
 
-			IPv6* originatorAddress = new IPv6(*(unsigned short*) (temp + 8),
-					*(unsigned short*) (temp + 10),
-					*(unsigned short*) (temp + 12),
-					*(unsigned short*) (temp + 14));
+			IPv6* originatorAddress = new IPv6(
+					ntohs(*(unsigned short*) (temp + 8)),
+					ntohs(*(unsigned short*) (temp + 10)),
+					ntohs(*(unsigned short*) (temp + 12)),
+					ntohs(*(unsigned short*) (temp + 14)));
 
 			temp += 16;
 
@@ -112,9 +111,8 @@ void Listener::listenSocket() {
 			uint8_t hopCount = ((uint8_t) *temp);
 			temp = temp + 1;
 
-			uint16_t messageSequenceNumber = ((uint16_t) *temp);
+			uint16_t messageSequenceNumber = ntohs(((uint16_t) *temp));
 			temp = temp + 2;
-
 
 			if (messageType == HELLO_TYPE) {
 				uint8_t hTime, willingness;
@@ -138,22 +136,23 @@ void Listener::listenSocket() {
 					//hNL->reserved = (uint8_t)*temp;
 					++temp;
 
-					uint16_t linkMessageSize = *(uint16_t*) temp;
+					uint16_t linkMessageSize = ntohs(*(uint16_t*) temp);
 					temp += 2;
 					int nb = (linkMessageSize - 4) / 16;
 					std::list<IPv6*> listIp;
 					while (nb > 0) {
 						nb--;
 						IPv6* currentV6 = new IPv6(
-								(*(unsigned short*) (temp + 8)),
-								(*(unsigned short*) (temp + 10)),
-								(*(unsigned short*) (temp + 12)),
-								(*(unsigned short*) (temp + 14)));
+								ntohs((*(unsigned short*) (temp + 8))),
+								ntohs((*(unsigned short*) (temp + 10))),
+								ntohs((*(unsigned short*) (temp + 12))),
+								ntohs((*(unsigned short*) (temp + 14))));
 						temp = temp + 16; //for each address ipv6 we add 16
 
 						listIp.push_back(currentV6);
 					}
-					HelloNeighborList* hNL = new HelloNeighborList(linkCode, listIp);
+					HelloNeighborList* hNL = new HelloNeighborList(linkCode,
+							listIp);
 
 					compt += linkMessageSize;
 					listhNl.push_back(hNL);
@@ -167,31 +166,31 @@ void Listener::listenSocket() {
 
 			} else if (messageType == TC_TYPE) {
 				std::string address = sender_endpoint.address().to_string();
-				address = address.substr(4,address.length());
-				address.insert(0,"2014");
-
-
+				address = address.substr(4, address.length());
+				address.insert(0, "2014");
 
 				uint16_t Ansn;
 				std::list<IPv6*> advertisedList;
 
-				Ansn = (*(uint16_t*) temp);
+				Ansn = ntohs((*(uint16_t*) temp));
 				temp += 2;
 				// reserved zone
 				temp += 2;
 				uint16_t nb = (messageSize - 24) / 16;
-				while (nb>0) {
-					IPv6* currentV6 = new IPv6(*(unsigned short*) (temp + 8),
-							*(unsigned short*) (temp + 10),
-							*(unsigned short*) (temp + 12),
-							*(unsigned short*) (temp + 14));
+				while (nb > 0) {
+					IPv6* currentV6 = new IPv6(
+							ntohs(*(unsigned short*) (temp + 8)),
+							ntohs(*(unsigned short*) (temp + 10)),
+							ntohs(*(unsigned short*) (temp + 12)),
+							ntohs(*(unsigned short*) (temp + 14)));
 					temp = temp + 16; //for each address ipv6 we add 16
 					advertisedList.push_back(currentV6);
 					nb--;
 				}
 				Tc* tMH = new Tc(packetLength, packetSequenceNumber,
 						messageType, vTime, messageSize, originatorAddress,
-						timeToLive, hopCount, messageSequenceNumber, Ansn,address,advertisedList);
+						timeToLive, hopCount, messageSequenceNumber, Ansn,
+						address, advertisedList);
 				msg = (Message*) tMH;
 			}
 
@@ -216,11 +215,10 @@ Message* Listener::getMsg() {
 	Message *message = mListMsg.front();
 
 	mListMsg.pop_front();
-	
+
 	mProtectList.unlock();
 
 	mSem_prod->post();
 
 	return message;
 }
-
