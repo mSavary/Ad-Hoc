@@ -1,10 +1,10 @@
-/**
+/*!
  * Listener.cpp
  *
- *      \author Efflam Lemailler & Céline Merlet
+ *      \author Efflam Lemaillet & Céline Merlet
  */
 
-/**
+/*
  * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
  *  network.
  *
