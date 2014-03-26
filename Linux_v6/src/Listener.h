@@ -27,20 +27,29 @@ private:
 	std::list<Message*> mListMsg;
 	boost::mutex mProtectList;
 	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons;
+
 	/**
-	 * Listening on the socket
+	 * Listening on the socket and cuttinfg of the receive packet
 	 */
 	void listenSocket();
 
 public:
+	/**
+	* Creation of the socket
+	*/
 	Listener();
 	~Listener();
+	
+	/**
+	* Creation of the thread to do other when the Listener listens on the network
+	*/
 	int run();
 
 
 	/**
-	 * Get the last message of the list, for the Controller
-	 */
+	* Get the last message of the list, for the Controller
+	* \return return the last message of the list
+	*/
 	Message* getMsg();
 };
 
