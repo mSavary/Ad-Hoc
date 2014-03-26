@@ -1,8 +1,8 @@
 /*!
- * Route.h
+ * \file Route.h
  *
- *  Created on: 1 Février 2014
- *      Author: Joran LeCallonec & Savary Maxime
+ * \date 1 Février 2014
+ * \author Joran LeCallonec & Savary Maxime
  */
 
 /*
@@ -35,23 +35,29 @@
 
 #include "IPv6.h"
 
-
+/*!
+ * \class Route
+ * \brief Class route is made to represent a routing table entry.
+ */
 class Route
 {
 
 private:
 	IPv6 	*mIpDest,
-			*mNextHop;
-	int		mMetric;
-	std::string 	mInterface;
-	int 	mAction;
+			*mNextHop;/*!< ipDestination and ipNexthop to represent the dest and the next hop*/
+	int		mMetric;/*!< represent the hop counts of the */
+	std::string 	mInterface;/*!< the interface for the route */
+	int 	mAction;/*!< Action update add delete or none of the route */
 
 public:
 	Route();
 	/*!
-	 * CONSTRUCTOR
+	 * \fn Route (IPv6 *ipDest,	IPv6 *nextHop, int metric, std::string interface)
 	 *
-	 * 		ROUTE need a destination IP, a nextHop IP, a metric (how many hops), and the interface
+	 * \param ipDest IPv6 of the destination
+	 * \param nextHop IPv6 of the next hop to reach the destination
+	 * \param metric number of hops to reach the Dest
+	 * \param interface the interface used by the route
 	 */
 	Route(IPv6 *ipDest,
 			IPv6 *nextHop,
@@ -59,53 +65,53 @@ public:
 			std::string interface);
 
 	/*!
-	 * FUNC getIpDest
+	 * \fn IPv6* getIpDest ()
 	 *
-	 * @returns IPv6 : destination IP of the route
+	 * \return IPv6* Destination IP of the route
 	 */
 	IPv6* getIpDest();
 
 	/*!
-	 * FUNC getNextHop
+	 * \fn IPv6* getNextHop ()
 	 *
-	 * @returns IPv6 : nextHop IP of the route
+	 * \return IPv6*  nextHop IP of the route
 	 */
 	IPv6* getNextHop();
 
 	/*!
-	 *  FUNC getMetric
+	 *  \fn int getMetric ()
 	 *
-	 *  @returns int : metric of the route
+	 *  \return int Metric of the route
 	 */
 	int getMetric();
 
 	/*!
-	 * FUNC getInterface
+	 * \fn std::string getInterface()
 	 *
-	 * @returns string : interface of the route
+	 * \return string Interface of the route
 	 */
 	std::string getInterface();
 
 	/*!
-	 *  FUNC getAction
+	 *  \fn int getAction ()
 	 *
-	 *  @returns int : Action of the route ADD / DEL / UPD
+	 *  \return int  Action of the route ADD / DEL / UPD
 	 */
 	int getAction();
 
 
 	/*!
-	 *  FUNC setAction
+	 *  \fn void setAction(int action)
 	 *
-	 *  @param int : Action to set
+	 *  \param int Action to set
 	 */
 	void setAction(int action);
 
 
 	/*!
-	 *  FUNC setRoute
+	 *  \fn void setRoute(Route *route)
 	 *
-	 *  @params Route :route to change
+	 *  \param route route to change
 	 */
 	void setRoute(Route *route);
 	virtual ~Route();
