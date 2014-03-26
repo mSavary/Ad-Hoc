@@ -1,8 +1,8 @@
 /*!
- * Route.cpp
+ * \file Route.cpp
  *
- *  Created on: 1 Février 2014
- *      Author: Joran LeCallonec & Savary Maxime
+ * \date 1 Février 2014
+ * \author Joran LeCallonec & Savary Maxime
  */
 
 /*

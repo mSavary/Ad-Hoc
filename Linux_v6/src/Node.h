@@ -513,9 +513,9 @@ public:
 	int delDest(IPv6 *ip);
 
 	/*!
-	 * \fn start
+	 * \fn int start ()
 	 *
-	 * 		start to send Hello and TC at regular interval see OLSR's rfc
+	 * 	\brief	Start to send Hello and TC at regular interval see OLSR's rfc
 	 */
 	inline int start() {
 		boost::thread TimerHello = boost::thread(&Node::sendHello, this);
