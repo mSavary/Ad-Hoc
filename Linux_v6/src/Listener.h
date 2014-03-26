@@ -1,10 +1,10 @@
-/**
- * Listener.h
+/*!
+ * \file Listener.h
  *
- *      \author Efflam Lemailler & Céline Merlet
+ * \author Efflam Lemaillet & Céline Merlet
  */
 
-/**
+/*!
  * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
  *  network.
  *
@@ -50,37 +50,48 @@
 #include "Tc.h"
 #include "const.h"
 
+/*!
+* \class Listener
+* \brief Listener store differents types of OLSR's mesages
+* Listener class's goal is to store differents types of OLSR's mesages in a list in order to save the receive messages when an other message is treated.
+*/
 class Listener {
 
 private:
-	boost::asio::io_service *mIoService;
-	boost::asio::ip::udp::endpoint mRemoteEndpoint;
-	boost::asio::ip::udp::socket *mSocket;
-	std::list<Message*> mListMsg;
-	boost::mutex mProtectList;
-	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons;
+	boost::asio::io_service *mIoService; /*!< to the inputs and outputs */
+	boost::asio::ip::udp::endpoint mRemoteEndpoint; /*!< associated with the socket */
+	boost::asio::ip::udp::socket *mSocket; /*!< socket to listen on the network */
+	std::list<Message*> mListMsg; /*!< list to store messages */
+	boost::mutex mProtectList; /*!< mutex to protect the list of messages */
+	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons; /*!< sempahore to protect the list of messages when the Controller and the Listener want to access it  */
 
 	/**
-	 * Listening on the socket and cuttinfg of the receive packet
-	 */
+	* \fn listenSocket();
+	* \brief Listening on the socket, cutting a message.
+	* Listening on the socket, cutting of the receive packet and store it in a list
+	*/
 	void listenSocket();
 
 public:
 	/**
-	* Creation of the socket
+	* \fn Listener();
+	* \brief Creation of the socket
 	*/
 	Listener();
 	~Listener();
 	
 	/**
-	* Creation of the thread to do other when the Listener listens on the network
+	* \fn run();
+	* \brief Creation of the thread
+	* Creation of the thread to do others things when the Listener listens on the network
 	*/
 	int run();
 
 
 	/**
-	* Get the last message of the list, for the Controller
-	* \return return the last message of the list
+	* \fn Message* getMsg();
+	* \brief Get the last message of the list, for the Controller
+	* \return Message* return the last message of the list
 	*/
 	Message* getMsg();
 };
