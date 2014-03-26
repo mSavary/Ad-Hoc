@@ -1,7 +1,6 @@
 #include "Tc.h"
 
 /* constants */
-#define SIZE_MAX_UDP 512
 #define C_TIME 0.0625
 #define a 8
 #define b 6

@@ -21,7 +21,7 @@ See AUTHORS and COPYRIGHT for the list of contributors and license informations.
 	GitHub : git clone https://github.com/mSavary/Ad-Hoc.git
 	
 	Once you have met requirements, compiling and installing is simple:
-		cd Ad-Hoc/src/
+		cd Ad-Hoc/Linux_v6/src/
 		g++ *.h *.cpp -lboost_system -lboost_thread -lpthread -O3 -o AdHoc
 
 /*******
@@ -49,3 +49,6 @@ See AUTHORS and COPYRIGHT for the list of contributors and license informations.
 	Your PC will automatically restart. 
 	
 	Then you can run Ad-Hoc/Linux_v6/src/AdHoc
+	
+	Once you want to stop Ad-Hoc Networks you simply need to run Ad-Hoc/Linux_v6/src/ :
+		./Dowscript /*Your WiFi Interface*/

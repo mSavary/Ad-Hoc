@@ -1,8 +1,8 @@
-/*
- * Node.cpp
+/*!
+ * \file Node.cpp
  *
- *  Created on: 1 Février 2014
- *      Author: Joran LeCallonec & Savary Maxime
+ *  \date 1 Février 2014
+ *      \author LeCallonec Joran & Savary Maxime
  */
 
 /*
@@ -30,7 +30,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "Node.h"
 
 Node::Node() {
@@ -45,6 +44,7 @@ Node::~Node() {
 }
 
 void Node::sendHello() {
+	int pqSeqNum = 1, mgSeqNum = 1;
 	while (1) {
 		std::list<IPv6*> nghb;
 
@@ -67,16 +67,17 @@ void Node::sendHello() {
 		}
 		mMutexNeighborIP.unlock();
 		sleep(HELLO_INTERVAL);
-		int pqSeqNum = 1, mgSeqNum = 1;
+
 		Hello *msg = new Hello(pqSeqNum, mMyIp, mgSeqNum, nghb, mpr);
+		pqSeqNum = (pqSeqNum + 1) % 65530;
+		mgSeqNum = (mgSeqNum + 1) % 65530;
 		msg->printData();
 		msg->sendHello();
 	}
 }
 
-
-
 void Node::sendTc() {
+	int pqSeqNum = 1, mgSeqNum = 1;
 	while (1) {
 		sleep(TC_INTERVAL);
 		if (isMpr()) {
@@ -94,8 +95,10 @@ void Node::sendTc() {
 				}
 			}
 			if (mMpr) {
-				int pqSeqNum = 1, mgSeqNum = 1;
+
 				Tc *msg = new Tc(pqSeqNum, mMyIp, mgSeqNum, advertiseList);
+				pqSeqNum = (pqSeqNum + 1) % 65530;
+				mgSeqNum = (mgSeqNum + 1) % 65530;
 				msg->sendTc();
 			}
 			mMutexAdvNeighborIP.lock();
@@ -287,8 +290,6 @@ int Node::addTwoHopNeighborTable(Route *route) {
 			if ((*it)->getIpDest()->isEgal(route->getIpDest())) {
 
 				if ((*it)->getNextHop()->isEgal(route->getNextHop())) {
-					//std::cout << "ERROR : Two Hop Neighbor Already Exist"
-					//	<< std::endl;
 					mMutexTwoHopTable.unlock();
 					return 3;
 				}
@@ -485,8 +486,8 @@ int Node::delTwoHopNeighbor(IPv6* ipToDelete, IPv6* ipHopToDelete) {
 				&& (*it)->getNextHop()->isEgal(ipHopToDelete)) {
 			if ((*it)->getAction() == ADD) {
 				it = mNeighborTable.erase(it);
-				std::cout << " erase : " << ipToDelete->toChar()
-						<< " hop : " << ipHopToDelete->toChar() << std::endl;
+				std::cout << " erase : " << ipToDelete->toChar() << " hop : "
+						<< ipHopToDelete->toChar() << std::endl;
 			} else if ((*it)->getAction() == NONE) {
 				std::cout << " ACTION to DEL : " << ipToDelete->toChar()
 						<< " hop : " << ipHopToDelete->toChar() << std::endl;

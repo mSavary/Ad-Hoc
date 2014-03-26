@@ -1,8 +1,8 @@
-/*
- * IPv6.cpp
+/*!
+ * \file IPv6.cpp
  *
- *  Created on: 13 janvier 2014
- *      Author: Joran LeCallonec & Savary Maxime
+ *  \date 13 janvier 2014
+ *  \author LeCallonec Joran & Savary Maxime
  */
 
 /*

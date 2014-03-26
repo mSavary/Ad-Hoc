@@ -1,8 +1,8 @@
-/*
- * Destination.cpp
+/*!
+ * \file Destination.cpp
  *
- *  Created on: 17 mars 2014
- *      Author: Joran LeCallonec & Savary Maxime
+ * \date 17 mars 2014
+ * \author Le Callonec Joran & Savary Maxime
  */
 
 /*

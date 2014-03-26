@@ -1,8 +1,11 @@
-/*
- * main.cpp
+/*!
+ * \file Controller.cpp
  *
- *  Created on: 20 mars 2014
- *      Author: Joran LeCallonec & Savary Maxime & Merlet Céline
+ * \date 20 mars 2014
+ * \author LeCallonec Joran & Savary Maxime & Merlet Céline
+ * \brief Main class create Node, Listener, RoutingTable, Destination.
+ *
+ * 			Apply every topology movements to the routing table
  */
 
 /*
@@ -44,20 +47,17 @@
 #include "Destination.h"
 #include "RoutingTable.h"
 #include <boost/thread/mutex.hpp>
-/**
- * Global Objects
- *
- */
+
 Node *mNode;
 std::list<Destination*> mDestination;
 boost::mutex mMutexDest;
 RoutingTable * kernelTable;
 
-/**
- * FUNC taitementHello
+/*!
+ * \fn int traitementHello (Hello* msg)
  *
- * 		Analyze Hello informations and apply every change to the kernel routing table
- * 	@params msg the message to analyze
+ * 	\brief	Analyze Hello informations and apply every changement to the kernel routing table and the Node
+ * 	\param msg the message to analyze
  */
 
 int traitementHello(Hello* msg) {
@@ -83,7 +83,6 @@ int traitementHello(Hello* msg) {
 				}
 			}
 			mMutexDest.unlock();
-			//break;
 		}
 
 	}
@@ -101,7 +100,6 @@ int traitementHello(Hello* msg) {
 		}
 	}
 	find = false;
-//fin traitement originator ADDRESSE
 
 	std::list<HelloNeighborList*> listNeighbor = msg->getNeighbors();
 
@@ -196,12 +194,12 @@ int traitementHello(Hello* msg) {
 	return 1;
 }
 
-/**
- * FUNC traitementTc
+/*!
+ * \fn int traitementTc (Tc* msg)
  *
- * 		Analyze Tc informations and apply every change to the kernel routing table
+ * 	\brief	Analyze Tc informations and apply every change to the kernel routing table and the Node
  *
- * @params msg The message to analyze
+ * \param msg The message to analyze
  */
 int traitementTc(Tc* msg) {
 	IPv6* origIp = msg->getOriginatorAddress();
@@ -270,11 +268,11 @@ int traitementTc(Tc* msg) {
 	return 0;
 }
 
-/**
- * FUNC checkDestination
+/*!
+ * \fn int checkDestination ()
  *
- * 		Check if a Destination we add before reach out of his life time
- * 		and then notify to delete it if necessary
+ * 	\brief	Check if a Destination we add before reach out of his life time
+ * 			and then notify to delete it if necessary.
  */
 int checkDestination() {
 	while (1) {
@@ -343,29 +341,29 @@ int checkDestination() {
 	return 0;
 }
 
-/**
- * FUNC runKernel
+/*!
+ * \fn int runKernel ()
  *
- * 		Every Hello interval apply or delete route that changes.
+ * 	\brief	Every Hello interval apply or delete route that changes.
  */
 int runKernel() {
 	while (1) {
 		sleep(HELLO_INTERVAL);
 		kernelTable->systemTableUpdate(mNode);
-		/*	std::ostringstream syscall;
-		 syscall << "route -6 ";
-
-		 if (system((syscall.str()).c_str()))
-		 std::cerr << " erreur syscall main \n";*/
 	}
 	return 0;
 }
-/**
- * FUNC main
+/*!
+ * \fn int main ()
  *
- * 		listen the network and get the message we receive.
+ * 	\brief	listen the network then get the message we receive and call the method to analyze the message
  */
 int main() {
+	std::ostringstream syscall;
+	syscall << "./forward.pl ";
+
+	if (system((syscall.str()).c_str()))
+		std::cerr << " erreur syscall main \n";
 
 	Listener * Listen = new Listener();
 	Listen->run();
@@ -373,7 +371,6 @@ int main() {
 	kernelTable = new RoutingTable();
 	boost::thread runCheckDest = boost::thread(checkDestination);
 	boost::thread kernelUpd = boost::thread(runKernel);
-//while(1);
 	int i = 0;
 	mNode->start();
 	while (1) {
@@ -394,9 +391,6 @@ int main() {
 			} else {
 				std::cout << "Unknown type message" << std::endl;
 			}
-			/*	std::cout << i << " messages recus! Je suis mpr ? : "
-			 << mNode->isMpr() << std::endl;*/
-
 		}
 		std::list<IPv6*> mprList = mNode->getMprList();
 		for (std::list<IPv6*>::iterator it = mprList.begin();
@@ -404,16 +398,6 @@ int main() {
 			std::cout << " EST MON MPR : " << (*it)->toChar() << std::endl;
 		}
 	}
-
-	/*
-	 if ((i % 2 == 0)) {
-	 kernelTable->systemTableUpdate(mNode);
-	 std::ostringstream syscall;
-	 syscall << "route -6 ";
-	 system((syscall.str()).c_str());
-
-	 }*/
-
 	return 0;
 }
 
