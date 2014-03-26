@@ -1,3 +1,35 @@
+/**
+ * Listener.cpp
+ *
+ *      \author Efflam Lemailler & Céline Merlet
+ */
+
+/**
+ * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
+ *  network.
+ *
+ * Copyright (c) 2014-2014 Gilles Guette <>
+ * Copyright (c) 2014-2014 ISTIC http://www.istic.univ-rennes1.fr/
+ * Copyright (c) 2014-2014 SUPELEC http://www.supelec.fr/rennes
+ *
+ * See the AUTHORS or Authors.txt file for copyright owners and
+ * contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #include "Listener.h"
 
 #define HELLO_MESSAGE 1
@@ -36,7 +68,7 @@ void Listener::listenSocket() {
 	mSocket->bind(mRemoteEndpoint);
 	try {
 		for (;;) {
-			// P() du producteur (initialisé a MAX_LENGHT)
+
 			mSem_prod->wait();
 			boost::array<char, BUFF_SIZE> recvBuf;
 			size_t len = mSocket->receive_from(boost::asio::buffer(recvBuf),
@@ -45,35 +77,28 @@ void Listener::listenSocket() {
 				throw boost::system::system_error(error);
 
 
-
-			// future stored message
 			Message * msg;
 
-			char* temp; // = (char*)malloc(len*sizeof(char));
+			char* temp;
 			char * originAddr = temp;
-			temp = recvBuf.data(); //put the buffer we receive in a char*
+			temp = recvBuf.data();
 
-			// store packetLength (2 bytes)
 			uint16_t packetLength = (*(uint16_t*) temp);
 			temp += 2;
-			// store packetSequenceNumber (2 bytes )
+			
 			uint16_t packetSequenceNumber = (*(uint16_t*) temp);
 			temp += 2;
 
-			// store messageType (1 b)
 			uint8_t messageType = (*(uint8_t*) temp);
 
 			temp = temp + 1;
 
-			// store vTime (1 b)
 			uint8_t vTime = (*(uint8_t*) temp);
 			temp = temp + 1;
 
-			// store messageSize (2 b)
 			uint16_t messageSize = (*(uint16_t*) temp);
 			temp += 2;
 
-			// store IPV6 address (16 b)
 			IPv6* originatorAddress = new IPv6(*(unsigned short*) (temp + 8),
 					*(unsigned short*) (temp + 10),
 					*(unsigned short*) (temp + 12),
@@ -81,15 +106,12 @@ void Listener::listenSocket() {
 
 			temp += 16;
 
-			// store TTL (1 b)
 			uint8_t timeToLive = (*(uint8_t*) temp);
 			temp = temp + 1;
 
-			// store hopCount (1b)
 			uint8_t hopCount = ((uint8_t) *temp);
 			temp = temp + 1;
 
-			// store MessageSequenceNumber
 			uint16_t messageSequenceNumber = ((uint16_t) *temp);
 			temp = temp + 2;
 
@@ -111,9 +133,7 @@ void Listener::listenSocket() {
 				uint16_t compt = 0; //4
 				while (compt < (messageSize - 20)) {
 
-					//
 					uint8_t linkCode = (uint8_t) *temp;
-					//hNL->setLinkCode((uint8_t) *temp);
 					++temp;
 					//hNL->reserved = (uint8_t)*temp;
 					++temp;
@@ -131,14 +151,10 @@ void Listener::listenSocket() {
 								(*(unsigned short*) (temp + 14)));
 						temp = temp + 16; //for each address ipv6 we add 16
 
-						//hMH->neighbors->neighborsAddrList.push_front(*currentV6);
-						//hNL->neighborsAddrList.emplace_back(*currentV6);
 						listIp.push_back(currentV6);
 					}
-					HelloNeighborList* hNL = new HelloNeighborList(linkCode,
-							listIp);
+					HelloNeighborList* hNL = new HelloNeighborList(linkCode, listIp);
 
-					//compt+=hMH->neighbors->linkMessageSize;
 					compt += linkMessageSize;
 					listhNl.push_back(hNL);
 				}
@@ -151,7 +167,6 @@ void Listener::listenSocket() {
 
 			} else if (messageType == TC_TYPE) {
 				std::string address = sender_endpoint.address().to_string();
-				//CHEAT todo
 				address = address.substr(4,address.length());
 				address.insert(0,"2014");
 
@@ -180,14 +195,11 @@ void Listener::listenSocket() {
 				msg = (Message*) tMH;
 			}
 
-			//Bloque accès a la liste
 			mProtectList.lock();
-			//si + de 10 elem dans la liste on produit rien
 
 			mListMsg.push_back(msg);
 			mProtectList.unlock();
 
-			// V() du conso
 			mSem_cons->post();
 
 		}
@@ -197,19 +209,16 @@ void Listener::listenSocket() {
 }
 
 Message* Listener::getMsg() {
-	// P() du conso
+
 	mSem_cons->wait();
 
-	//bloque la liste
 	mProtectList.lock();
 	Message *message = mListMsg.front();
 
 	mListMsg.pop_front();
-
-	// libère la liste
+	
 	mProtectList.unlock();
 
-	// V() du prod
 	mSem_prod->post();
 
 	return message;
