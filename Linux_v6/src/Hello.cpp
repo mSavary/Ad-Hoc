@@ -1,4 +1,7 @@
 #include "Hello.h"
+#define C_TIME 0.0625
+#define a 8
+#define b 6
 
 using namespace std;
 
@@ -26,9 +29,6 @@ std::list<IPv6*> HelloNeighborList::getNeighborsAddrList() {
 }
 
 
-/**
- *  IMPORTANT !
- */
 Hello::Hello(uint16_t packetSequenceNumber,
 		IPv6 * originatorAddress,
 		uint16_t messageSequenceNumber, std::list<IPv6*> neighborList,
@@ -38,19 +38,19 @@ Hello::Hello(uint16_t packetSequenceNumber,
 	mMessageSequenceNumber = messageSequenceNumber;
 	mMessageType = HELLO_TYPE;
 	mMessageSize = 0;
-	mVTime= 0;
+	mVTime= C_TIME * (1 + a / 16) * pow(2, b);
 	mWillingness = WILL_DEFAULT;
 	mReserved = 0x0;
-	mHTime = 0; //todo combien dans HTIME ?
+	mHTime = 6;
 	mHopCount = 0;
 	mOriginatorAddress=originatorAddress;
 	mTimeToLive = 2;
 	if (neighborList.size() != 0) {
-		HelloNeighborList *nghb = new HelloNeighborList(10, neighborList);
+		HelloNeighborList *nghb = new HelloNeighborList(LINK_CODE_NGHB, neighborList);
 		mNeighbors.push_back(nghb);
 	}
 	if (mprList.size() != 0) {
-		HelloNeighborList *mpr = new HelloNeighborList(01, mprList);
+		HelloNeighborList *mpr = new HelloNeighborList(LINK_CODE_MPR, mprList);
 		mNeighbors.push_back(mpr);
 	}
 

@@ -3,9 +3,9 @@ Ad-Hoc Networks development team
 
 ## Copyright owners
 
-- Gilles Guette
+- Université de Rennes 1
   - Copyright © 2014-2014
-  -Mail
+  - http://www.univ-rennes1.fr/
 
 - ISTIC
   - Copyright © 2014-2014
@@ -20,8 +20,8 @@ Ad-Hoc Networks development team
 
 ### Integrator / Release manager
 
-- Merlet Céline <>
-- Le Callonec Joran <>
+- Merlet Céline <celine.merlet11@gmail.com>
+- Le Callonec Joran <lecallonecjoran@gmail.com>
 - Savary Maxime <maxime.sav@gmail.com>
 
 
@@ -35,11 +35,11 @@ Ad-Hoc Networks development team
  
 - Karim Chahal
 - Zheng Jiang
-- Joran Le Callonec
+- Joran Le Callonec <lecallonecjoran@gmail.com>
 - Efflam Lemaillet
 - Jitao Li
-- Celine Merlet
-- Mme. Aminatou Mohamadou
+- Celine Merlet <celine.merlet11@gmail.com>
+- Aminatou Mohamadou
 - Alban Ngoma
 - Maxime Savary <maxime.sav@gmail.com>
 - Corentin Soriot

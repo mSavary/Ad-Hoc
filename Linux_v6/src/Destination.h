@@ -1,8 +1,8 @@
-/*
- * DestinationTimer.h
+/*!
+ * \file DestinationTimer.h
  *
- *  Created on: 17 mars 2014
- *      Author: Le Callonec Joran & Savary Maxime
+ * \date 17 mars 2014
+ * \author Le Callonec Joran & Savary Maxime
  */
 
 /*
@@ -39,44 +39,68 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+/*!
+ * \class Destination
+ * \brief Object representing a destination we can reach.
+ * 		 Her validity ( Alive or not).
+ *
+ */
 class Destination {
-	private:
-		IPv6 *mIP;
-		int mMetric;
-		int mState;
-		boost::thread *mThreadRun;
-		boost::asio::io_service *mIo;
-		boost::asio::deadline_timer *mTimer;
-		bool mDel;
-		void changeState();
-	public:
-		Destination(IPv6 *ip, int metric);
+private:
+	IPv6 *mIP;/*!< Ip of the destination.*/
+	int mMetric;/*!< Metric of the destination.*/
+	int mState;/*!< State of the Destination.*/
+	boost::thread *mThreadRun;
+	boost::asio::io_service *mIo;
+	boost::asio::deadline_timer *mTimer;
+	bool mDel;
 
-		/**
-		 * FUNC resetTimer
-		 *
-		 * 		Restart the timer for a destination before it's set to DEL
-		 */
-		void resetTimer();
+	/*!
+	 * \fn void changeState()
+	 * \brief Method call to change the state of the Destination if it reaches the Timeout.
+	 *
+	 */
+	void changeState();
+public:
+	Destination(IPv6 *ip, int metric);
 
-		/**
-		 * FUNC run
-		 *
-		 * 		launch the timer in a thread
-		 */
-		void run();
+	/*!
+	 * \fn 	void resetTimer()
+	 *
+	 * \brief Restart the timer for a destination before it's set to DEL
+	 */
+	void resetTimer();
 
-		inline IPv6* getIp() {
-			return mIP;
-		}
-		inline int getState(){
-			return mState;
-		}
-		inline int getMetric(){
-			return mMetric;
-		}
-		~Destination();
+	/*!
+	 * \fn void run()
+	 *
+	 * 	\brief	launch the timer in a thread
+	 */
+	void run();
 
-	};
+	/*!
+	 * \fn IPv6* getIp ()
+	 * \return IPv6* the ip of the Destination's object.
+	 */
+	inline IPv6* getIp() {
+		return mIP;
+	}
+	/*!
+	 * \fn int getState ()
+	 * \return int the state of the destination ( DEAD or ALIVE)
+	 */
+	inline int getState() {
+		return mState;
+	}
+	/*!
+	 * \fn int getMetric ()
+	 * \return int the metric of the destination
+	 */
+	inline int getMetric() {
+		return mMetric;
+	}
+	~Destination();
+
+};
 
 #endif /* DESTINATION_H_ */

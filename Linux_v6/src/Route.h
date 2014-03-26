@@ -1,4 +1,4 @@
-/*
+/*!
  * Route.h
  *
  *  Created on: 1 Février 2014
@@ -48,7 +48,7 @@ private:
 
 public:
 	Route();
-	/**
+	/*!
 	 * CONSTRUCTOR
 	 *
 	 * 		ROUTE need a destination IP, a nextHop IP, a metric (how many hops), and the interface
@@ -58,35 +58,35 @@ public:
 			int metric,
 			std::string interface);
 
-	/**
+	/*!
 	 * FUNC getIpDest
 	 *
 	 * @returns IPv6 : destination IP of the route
 	 */
 	IPv6* getIpDest();
 
-	/**
+	/*!
 	 * FUNC getNextHop
 	 *
 	 * @returns IPv6 : nextHop IP of the route
 	 */
 	IPv6* getNextHop();
 
-	/**
+	/*!
 	 *  FUNC getMetric
 	 *
 	 *  @returns int : metric of the route
 	 */
 	int getMetric();
 
-	/**
+	/*!
 	 * FUNC getInterface
 	 *
 	 * @returns string : interface of the route
 	 */
 	std::string getInterface();
 
-	/**
+	/*!
 	 *  FUNC getAction
 	 *
 	 *  @returns int : Action of the route ADD / DEL / UPD
@@ -94,7 +94,7 @@ public:
 	int getAction();
 
 
-	/**
+	/*!
 	 *  FUNC setAction
 	 *
 	 *  @param int : Action to set
@@ -102,7 +102,7 @@ public:
 	void setAction(int action);
 
 
-	/**
+	/*!
 	 *  FUNC setRoute
 	 *
 	 *  @params Route :route to change
