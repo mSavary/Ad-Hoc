@@ -82,8 +82,12 @@ public:
 	 * \fn Message(uint16_t packetSequenceNumber, uint8_t messageType,
 			IPv6* originatorAddress, uint8_t hopCount,
 			uint16_t messageSequenceNumber)
+	* \param packetSequenceNumber the Number of your packet
+	* \param messageType the type of your message
+	* \param originatorAdress the address of the sender
+	* \param hopCount the hopCount of your message
+	* \param messageSequenceNumber the number of your message
 	 * \brief Create your Message
-	 * TODO \param !
 	 */
 	Message(uint16_t packetSequenceNumber, uint8_t messageType,
 			IPv6* originatorAddress, uint8_t hopCount,
@@ -94,8 +98,16 @@ public:
 			uint8_t messageType, uint8_t vTime, uint16_t messageSize,
 			IPv6 * originatorAdress, uint8_t timeToLive, uint8_t hopCount,
 			uint16_t messageSequenceNumber)
+	* \param packetLength the Length of your message
+	* \param packetSequenceNumber the Number of your packet
+	* \param messageType the type of your message
+	* \param vTime the vTime of your message
+	* \param messageSize the siez of your message
+	* \param originatorAdress the address of the sender
+	* \param timeToLive the TTL of your message
+	* \param hopCount the hopCount of your message
+	* \param messageSequenceNumber the number of your message
 	 * \brief Create your Message
-	 * TODO \param !
 	 */
 	Message(uint16_t packetLength, uint16_t packetSequenceNumber,
 			uint8_t messageType, uint8_t vTime, uint16_t messageSize,
@@ -170,63 +182,63 @@ public:
 	/*!
 	 * \fn void setPacketLength(uint16_t n)
 	 * \brief Replace the PacketLength by a new one
-	 * TODO \param !
+	* \param n the new value of your PacketLength
 	 */
 	void setPacketLength(uint16_t n);
 
 	/*!
 	 * \fn void setPacketSequenceNumber(uint16_t n)
 	 * \brief Replace the PacketSequenceNumber by a new one
-	 * TODO \param !
+	* \param n the new value of your PacketSequenceNumber
 	 */
 	void setPacketSequenceNumber(uint16_t n);
 
 	/*!
 	 * \fn void setMessageType(uint8_t n)
 	 * \brief Replace the MessageType by a new one
-	 * TODO \param !
+	* \param n the new value of your MessageType
 	 */
 	void setMessageType(uint8_t n);
 
 	/*!
 	 * \fn void setVTime(uint8_t n)
 	 * \brief Replace the VTime by a new one
-	 * TODO \param !
+	* \param n the new value of your VTime
 	 */
 	void setVTime(uint8_t n);
 
 	/*!
 	 * \fn void setMessageSize(uint16_t n)
 	 * \brief Replace the MessageSize by a new one
-	 * TODO \param !
+	* \param n the new value of your MessageSize
 	 */
 	void setMessageSize(uint16_t n);
 
 	/*!
 	 * \fn void setOriginatorAddress(IPv6* n)
 	 * \brief Replace the OriginatorAddress by a new one
-	 * TODO \param !
+	* \param n the new value of your OriginatorAddress(
 	 */
 	void setOriginatorAddress(IPv6* n);
 
 	/*!
 	 * \fn void setTimeToLive(uint8_t n)
 	 * \brief Replace the TimeToLive by a new one
-	 * TODO \param !
+	* \param n the new value of your TimeToLive
 	 */
 	void setTimeToLive(uint8_t n);
 
 	/*!
 	 * \fn void setHopCount(uint8_t n)
 	 * \brief Replace the HopCount by a new one
-	 * TODO \param !
+	* \param n the new value of your HopCount
 	 */
 	void setHopCount(uint8_t n);
 
 	/*!
 	 * \fn void setMessageSequenceNumber(uint16_t n)
 	 * \brief Replace the MessageSequenceNumber by a new one
-	 * TODO \param !
+	* \param n the new value of your MessageSequenceNumber
 	 */
 	void setMessageSequenceNumber(uint16_t n);
 
