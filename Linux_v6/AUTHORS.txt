@@ -40,6 +40,6 @@ Ad-Hoc Networks development team
 - Jitao Li
 - Celine Merlet <celine.merlet11@gmail.com>
 - Aminatou Mohamadou
-- Alban Ngoma
+- Alban Ngoma <ngoma.alban@gmail.com>
 - Maxime Savary <maxime.sav@gmail.com>
 - Corentin Soriot
