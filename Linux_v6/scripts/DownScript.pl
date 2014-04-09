@@ -15,8 +15,11 @@ open (FILE, ">$forward") || die ("ERROR\n");
 print FILE "0";
 close(FILE);
 
+my $interface = `iwconfig 2>&1 | grep -e 'IEEE 802.11' | cut -f1 -d ' '`;
+chomp($interface);
+
 `NetworkManager status 2>&1`;
 if(`echo $?`!=0){
  `service network-manager restart`;
 }
-print `echo Setting $ARGV[0] DEFAULT`;
+print `echo Setting $interface DEFAULT`;

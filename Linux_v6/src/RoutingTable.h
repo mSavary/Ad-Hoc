@@ -60,7 +60,6 @@ private:
 	 *
 	 * \param r the route to add
 	 * \param neighb to know if r is a neighbor 
-	 * \return void
 	 */
 	void addRoute(Route *r,bool neighb); 
 
@@ -70,7 +69,6 @@ private:
 	 *
 	 * \param r the route to delete
 	 * \param neighb to know if r is a neighbor 
-	 * \return void
 	 */
 	void deleteRoute(Route *r,bool neighb); 
 	
@@ -80,7 +78,6 @@ private:
 	 *
 	 * \param r the route to update
 	 * \param neighb to know if r is a neighbor 
-	 * \return void
 	 */
 	void updateRoute(Route *r,bool neighb); 
 
@@ -89,7 +86,7 @@ public:
 
 	/*!
 	 * \fn RoutingTable()
-	 * \brief Initializes your app routing table
+	 * \brief Create an instance of RoutingTable
 	 */
 	RoutingTable(); 
 
@@ -100,7 +97,6 @@ public:
 	 *	  and check the action to do for every route.
 	 *
 	 * \param noeud containing the NeighborTable field to run through it.
-	 * \return void
 	 */
 	void systemTableUpdate(Node* noeud);
 

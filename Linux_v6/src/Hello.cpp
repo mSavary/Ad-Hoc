@@ -28,25 +28,25 @@ std::list<IPv6*> HelloNeighborList::getNeighborsAddrList() {
 	return mNeighborsAddrList;
 }
 
-
-Hello::Hello(uint16_t packetSequenceNumber,
-		IPv6 * originatorAddress,
+Hello::Hello(uint16_t packetSequenceNumber, IPv6 * originatorAddress,
 		uint16_t messageSequenceNumber, std::list<IPv6*> neighborList,
-		std::list<IPv6*> mprList) : Message() {
+		std::list<IPv6*> mprList) :
+		Message() {
 	mPacketLength = 0;
-	mPacketSequenceNumber= packetSequenceNumber;
+	mPacketSequenceNumber = packetSequenceNumber;
 	mMessageSequenceNumber = messageSequenceNumber;
 	mMessageType = HELLO_TYPE;
 	mMessageSize = 0;
-	mVTime= C_TIME * (1 + a / 16) * pow(2, b);
+	mVTime = C_TIME * (1 + a / 16) * pow(2, b);
 	mWillingness = WILL_DEFAULT;
 	mReserved = 0x0;
 	mHTime = 6;
 	mHopCount = 0;
-	mOriginatorAddress=originatorAddress;
+	mOriginatorAddress = originatorAddress;
 	mTimeToLive = 2;
 	if (neighborList.size() != 0) {
-		HelloNeighborList *nghb = new HelloNeighborList(LINK_CODE_NGHB, neighborList);
+		HelloNeighborList *nghb = new HelloNeighborList(LINK_CODE_NGHB,
+				neighborList);
 		mNeighbors.push_back(nghb);
 	}
 	if (mprList.size() != 0) {
@@ -55,22 +55,24 @@ Hello::Hello(uint16_t packetSequenceNumber,
 	}
 
 }
-Hello::Hello(uint8_t willingness,uint8_t hTime,uint16_t packetLength, uint16_t packetSequenceNumber,
-		uint8_t messageType, uint8_t vTime, uint16_t messageSize,
-		IPv6 * originatorAddress, uint8_t timeToLive, uint8_t hopCount,
-		uint16_t messageSequenceNumber,std::list<HelloNeighborList*> neighbor):Message() {
+Hello::Hello(uint8_t willingness, uint8_t hTime, uint16_t packetLength,
+		uint16_t packetSequenceNumber, uint8_t messageType, uint8_t vTime,
+		uint16_t messageSize, IPv6 * originatorAddress, uint8_t timeToLive,
+		uint8_t hopCount, uint16_t messageSequenceNumber,
+		std::list<HelloNeighborList*> neighbor) :
+		Message() {
 	mWillingness = willingness;
 	mReserved = 0x0;
 	mHTime = hTime;
-	mPacketLength= packetLength;
+	mPacketLength = packetLength;
 	mPacketSequenceNumber = packetSequenceNumber;
-	mMessageSequenceNumber= messageSize;
+	mMessageSequenceNumber = messageSize;
 	mMessageSize = messageSize;
 	mMessageType = messageType;
-	mVTime= vTime;
-	mOriginatorAddress= originatorAddress;
+	mVTime = vTime;
+	mOriginatorAddress = originatorAddress;
 	mTimeToLive = timeToLive;
-	mHopCount= hopCount;
+	mHopCount = hopCount;
 	mNeighbors = neighbor;
 }
 
@@ -117,7 +119,8 @@ void Hello::printData() {
 			ipv != liste.end(); ipv++) {
 		std::list<IPv6*> ip = (*ipv)->getNeighborsAddrList();
 		std::cout << " LINK CODE :" << (int) (*ipv)->getLinkCode() << std::endl;
-		std::cout << "Link msg Size : "<< (int) (*ipv)->getLinkMessageSize() << std::endl;
+		std::cout << "Link msg Size : " << (int) (*ipv)->getLinkMessageSize()
+				<< std::endl;
 		for (std::list<IPv6*>::iterator it = ip.begin(); it != ip.end(); it++) {
 			std::cout << " IP : " << (*it)->toChar() << std::endl;
 		}
@@ -126,7 +129,7 @@ void Hello::printData() {
 
 int Hello::sendHello() {
 	char* send_buf;
-	bool sendagain=false;
+	bool sendagain = false;
 	send_buf = (char*) malloc(sizeof(char) * BUFF_SIZE);
 	mHopCount++;
 	mTimeToLive--;
@@ -140,7 +143,7 @@ int Hello::sendHello() {
 	//On doit faire sur 16 mais comme on ne s'occupe pas des 8 premier c'est pour ça qu'on commence à 16 et non 8
 	int c = 8;
 	for (int y = 0; y < 8; y++) {
-		*(uint16_t*) (send_buf + c) = mOriginatorAddress->getScope(y);
+		*(uint16_t*) (send_buf + c) = htons(mOriginatorAddress->getScope(y));
 		c += 2;
 	}
 	//Time To Live
@@ -150,13 +153,13 @@ int Hello::sendHello() {
 	*(send_buf + 25) = mHopCount;
 	//*(send_buf+25) = 0x3C;
 	//Message Sequence Number
-	*(uint16_t*) (send_buf + 26) = mMessageSequenceNumber;
+	*(uint16_t*) (send_buf + 26) = htons(mMessageSequenceNumber);
 	//*(uint16_t*)(send_buf+26) = 0x4444;
 
 	//HELLO MESSAGE :
 
 	//RESERVED
-	*(uint16_t*) (send_buf + 28) = mReserved;
+	*(uint16_t*) (send_buf + 28) = htons(mReserved);
 	// HTIME
 	*(send_buf + 30) = mHTime;
 	// WillingNess
@@ -177,14 +180,14 @@ int Hello::sendHello() {
 		*(uint8_t*) (send_buf + c) = (*iv)->getReserved();
 		// link message size
 		c++;
-		*(uint16_t*) (send_buf + c) = (*iv)->getLinkMessageSize();
+		*(uint16_t*) (send_buf + c) = htons((*iv)->getLinkMessageSize());
 		helloSize += (*iv)->getLinkMessageSize();
 		c += 2;
 		std::list<IPv6*> list = (*iv)->getNeighborsAddrList();
-		for (std::list<IPv6*>::iterator it = list.begin();
-				it != list.end(); it++) { // voir le nbr d'ip max
+		for (std::list<IPv6*>::iterator it = list.begin(); it != list.end();
+				it++) { // voir le nbr d'ip max
 			for (int j = 0; j < 8; j++) {
-				*(uint16_t*) (send_buf + c) = (*it)->getScope(j);
+				*(uint16_t*) (send_buf + c) = htons((*it)->getScope(j));
 				c += 2;
 			}
 		}
@@ -197,10 +200,10 @@ int Hello::sendHello() {
 	 */
 //packetHeader
 	// packetLength
-	*(uint16_t*) send_buf = mPacketLength;
+	*(uint16_t*) send_buf = htons(mPacketLength);
 	//*(uint16_t*)send_buf = 0xA2B8;
 	// PacketSequenceNumber
-	*(uint16_t*) (send_buf + 2) = mPacketSequenceNumber;
+	*(uint16_t*) (send_buf + 2) = htons(mPacketSequenceNumber);
 	//*(uint16_t*)(send_buf+2) = 0xB0C3;
 
 	//messageHeader
@@ -211,7 +214,7 @@ int Hello::sendHello() {
 	*(send_buf + 5) = mVTime;
 	//*(send_buf+5) = 0x22;
 	// messageSize
-	*(uint16_t*) (send_buf + 6) = mMessageSize;
+	*(uint16_t*) (send_buf + 6) = htons(mMessageSize);
 	//*(uint16_t*)(send_buf+6) = (uint16_t)0x42;
 
 	std::string container(send_buf, c);

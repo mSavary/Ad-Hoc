@@ -360,10 +360,12 @@ int runKernel() {
  */
 int main() {
 	std::ostringstream syscall;
-	syscall << "./forward.pl ";
+	syscall << "./scripts/./forward.pl ";
 
-	if (system((syscall.str()).c_str()))
+	if (system((syscall.str()).c_str())){
 		std::cerr << " erreur syscall main \n";
+		return 1;
+	}
 
 	Listener * Listen = new Listener();
 	Listen->run();

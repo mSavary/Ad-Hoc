@@ -2,6 +2,19 @@
 use strict;use File::Copy;
 # Création du fichier 'fichier.txt'
 
+
+my $interface = `iwconfig 2>&1 | grep -e 'IEEE 802.11' | cut -f1 -d ' '`;
+chomp($interface);
+
+my $commande = "ifconfig " . $interface . " | grep inet6 | awk '\$0 ~ /inet6:/ { print \$3 }'";
+
+my $ip;
+$ip = qx {$commande};
+
+my $ipAdHoc = substr($ip, 4, length($ip)-8);
+
+$ipAdHoc = "2014".$ipAdHoc;
+
 my $fichier = "/etc/network/interfaces";
 my $fichierOrig = "/etc/network/interfaces.orig";
 
@@ -9,8 +22,8 @@ copy($fichier,$fichierOrig);
 
 open (FICHIER, ">>$fichier") || die ("ERROR\n");
 # setting interface !
-print FICHIER "auto $ARGV[0]\niface $ARGV[0] inet6 static
-	address $ARGV[1]
+print FICHIER "auto $interface\niface $interface inet6 static
+	address $ipAdHoc
 	netmask 64
 	wireless-essid Whisky 
         wireless-channel 5
@@ -23,7 +36,7 @@ close (FICHIER);
 if(`echo $?`!=0){
  `service network-manager restart`;
 }
-`ifconfig $ARGV[0] up`;
+qx{ifconfig $interface up};
 `shutdown -r now`;
-print `echo Setting $ARGV[0] AD HOC`;
+print `echo Setting $interface AD HOC`;
 

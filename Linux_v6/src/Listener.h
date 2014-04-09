@@ -4,7 +4,7 @@
  * \author Efflam Lemaillet & Céline Merlet
  */
 
-/*!
+/*
  * This file is part of Ad-Hoc Networks an app base on OLSR to handle Ad-Hoc
  *  network.
  *
@@ -65,33 +65,33 @@ private:
 	boost::mutex mProtectList; /*!< mutex to protect the list of messages */
 	boost::interprocess::interprocess_semaphore *mSem_prod, *mSem_cons; /*!< sempahore to protect the list of messages when the Controller and the Listener want to access it  */
 
-	/**
+	/*!
 	* \fn listenSocket();
 	* \brief Listening on the socket, cutting a message.
-	* Listening on the socket, cutting of the receive packet and store it in a list
+	* Listening on the socket, cutting of the receive packet and store it in a mesagge in the list
 	*/
 	void listenSocket();
 
 public:
-	/**
+	/*!
 	* \fn Listener();
-	* \brief Creation of the socket
+	* \brief Create an instance of Listener
 	*/
 	Listener();
 	~Listener();
 	
-	/**
+	/*!
 	* \fn run();
 	* \brief Creation of the thread
-	* Creation of the thread to do others things when the Listener listens on the network
+	* Creation of the thread where we run the method ListendSocket
 	*/
 	int run();
 
 
-	/**
+	/*!
 	* \fn Message* getMsg();
-	* \brief Get the last message of the list, for the Controller
-	* \return Message* return the last message of the list
+	* \brief Get the first message of the list, for the Controller and delete it from the list
+	* \return Message* return the first message of the list
 	*/
 	Message* getMsg();
 };
