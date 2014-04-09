@@ -34,12 +34,12 @@ Ad-Hoc Networks development team
 ### Contributors
  
 - Karim Chahal <chahal.karim@yahoo.fr>
-- Zheng Jiang
+- Zheng Jiang <jiangzheng0507@gmail.com>
 - Joran Le Callonec <lecallonecjoran@gmail.com>
 - Efflam Lemaillet
-- Jitao Li
+- Jitao Li <albert.lichine@gmail.com>
 - Celine Merlet <celine.merlet11@gmail.com>
-- Aminatou Mohamadou
+- Aminatou Mohamadou<aminatoumohamadou@gmail.com>
 - Alban Ngoma <ngoma.alban@gmail.com>
 - Maxime Savary <maxime.sav@gmail.com>
 - Corentin Soriot
