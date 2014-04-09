@@ -68,11 +68,14 @@ private:
 	uint16_t mLinkMessageSize;/*!<The size of the link message.*/
 	std::list<IPv6*> mNeighborsAddrList;/*!< list of neighbor node address neighbor node.*/
 
+/*!<*/
 public:
 
 	/*!
 	 * \fn HelloNeighborList(uint8_t linkCode, std::list<IPv6*> NeighborsAddrList)
 	 * \brief Create your NeighborList
+	 * \param linkCode the linkCode of your hello message
+	* \param NeighborsAddrList the list of your neighbor addresse
 	 */
 	HelloNeighborList(uint8_t linkCode, std::list<IPv6*> NeighborsAddrList);
 
@@ -128,7 +131,11 @@ public:
 			uint16_t messageSequenceNumber, std::list<IPv6*> neighborList,
 			std::list<IPv6*> mprList)
 	 * \brief Create your paquet Hello
-	 * TODO \param !
+	* \param packetSequenceNumber the Number of your packet
+	* \param originatorAdress the address of the sender
+	* \param messageSequenceNumber the number of your message
+	* \param neighborList the list of your neighbor
+	* \param mprList the list of mpr
 	 */
 	Hello(uint16_t packetSequenceNumber, IPv6 * originatorAdress,
 			uint16_t messageSequenceNumber, std::list<IPv6*> neighborList,
@@ -141,7 +148,16 @@ public:
 			uint8_t hopCount, uint16_t messageSequenceNumber,
 			std::list<HelloNeighborList*> neighbors)
 	 * \brief Create your paquet Hello
-	 * TODO \param !
+	* \param willingness the willingnss of your packet
+	* \param hTime the hTime of your packet
+	* \param packetLength the Length of your packet
+	* \param packetSequenceNumber the Number of your packet
+	* \param originatorAdress the address of the sender
+	* \param timeToLive the TTL of your packet
+	* \param hopCount the hopCount of your packet
+	* \param messageSequenceNumber the number of your message
+	* \param neighborList the list of your neighbor
+	* \param mprList the list of mpr
 	 */
 	Hello(uint8_t willingness, uint8_t hTime, uint16_t packetLength,
 			uint16_t packetSequenceNumber, uint8_t messageType, uint8_t vTime,
@@ -180,7 +196,7 @@ public:
 	/*!
 	 * \fn void setReserved(uint16_t reserved)
 	 * \brief Replace the reserved by a new one
-	 * TODO \param !
+	* \param reserved the field reserved of your packet
 	 */
 	void setReserved(uint16_t reserved);
 
@@ -188,21 +204,21 @@ public:
 	/*!
 	 * \fn void setHTime(uint8_t n)
 	 * \brief Replace the HTime by a new one
-	 * TODO \param !
+	* \param n the new value of your Htime
 	 */
 	void setHTime(uint8_t n);
 
 	/*!
 	 * \fn void setWillingness(uint8_t n)
 	 * \brief Replace the Willingness by a new one
-	 * TODO \param !
+	* \param n the new value of your willingness
 	 */
 	void setWillingness(uint8_t n);
 
 	/*!
 	 * \fn void setNeighbors(HelloNeighborList* n)
 	 * \brief Replace the Neighbor list by a new one
-	 * TODO \param !
+	* \param n the new value of your NeighborList
 	 */
 	void setNeighbors(HelloNeighborList* n);
 
