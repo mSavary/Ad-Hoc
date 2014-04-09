@@ -36,10 +36,10 @@ Ad-Hoc Networks development team
 - Karim Chahal <chahal.karim@yahoo.fr>
 - Zheng Jiang <jiangzheng0507@gmail.com>
 - Joran Le Callonec <lecallonecjoran@gmail.com>
-- Efflam Lemaillet
+- Efflam Lemaillet <lemaillet.efflam@gmail.com>
 - Jitao Li <albert.lichine@gmail.com>
 - Celine Merlet <celine.merlet11@gmail.com>
 - Aminatou Mohamadou<aminatoumohamadou@gmail.com>
 - Alban Ngoma <ngoma.alban@gmail.com>
 - Maxime Savary <maxime.sav@gmail.com>
-- Corentin Soriot
+- Corentin Soriot <silou.atien@gmail.com>
