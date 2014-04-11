@@ -28,18 +28,18 @@ Ad-Hoc Networks development team
 ### Main programmer and founder
 
 - Savary Maxime <maxime.sav@gmail.com>
-- Chahal Karim <>
+- Chahal Karim  <chahal.karim@yahoo.fr>
 
 
 ### Contributors
  
-- Karim Chahal
-- Zheng Jiang
+- Karim Chahal <chahal.karim@yahoo.fr>
+- Zheng Jiang <jiangzheng0507@gmail.com>
 - Joran Le Callonec <lecallonecjoran@gmail.com>
-- Efflam Lemaillet
-- Jitao Li
+- Efflam Lemaillet <lemaillet.efflam@gmail.com>
+- Jitao Li <albert.lichine@gmail.com>
 - Celine Merlet <celine.merlet11@gmail.com>
-- Aminatou Mohamadou
-- Alban Ngoma
+- Aminatou Mohamadou<aminatoumohamadou@gmail.com>
+- Alban Ngoma <ngoma.alban@gmail.com>
 - Maxime Savary <maxime.sav@gmail.com>
-- Corentin Soriot
+- Corentin Soriot <silou.atien@gmail.com>
