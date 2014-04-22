@@ -1,0 +1,36 @@
+digraph "traitementTc"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="traitementTc",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="Message::getOriginatorAddress",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_message.html#a6d733d958fed303b29dd723a3175e5b4",tooltip="Allow you to get OriginatorAddress. "];
+  Node1 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="Tc::getForwarder",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tc.html#acfbab61b17a462c6d8b5ac0093508d3c",tooltip="Return the IP of the originator of the packet. "];
+  Node1 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="IPv6::isEgal",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_i_pv6.html#a98f978f03ef1059b1ba30c6c3801c471",tooltip="Compare 2 IPv6. "];
+  Node1 -> Node5 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="Node::getMyIp",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_node.html#a1b5836a66868d13b5956ac2377968040",tooltip="Allow you to get your IP. "];
+  Node1 -> Node6 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="Message::getHopCount",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_message.html#a9b437e79e0118f81521eaa0be377532a",tooltip="Allow you to get HopCount. "];
+  Node1 -> Node7 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="Node::getDestIP",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_node.html#ab70b878fc4c182cef130411e980300b2",tooltip="Allow yu to get every Destination IP with a metric &gt; 2. "];
+  Node1 -> Node8 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="Tc::getAdvertisedNeighbor\lMainAddress",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tc.html#aa5e1405c53b6f59caca0e420a246fbb5",tooltip="Return the list of the AdvertisedNeighborMainAddress. "];
+  Node1 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="Node::getInterface",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_node.html#a2dcde2746f5bf636ff22a7d281e65df9",tooltip="Allow you to get your interface name. "];
+  Node1 -> Node10 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="Node::addDestTable",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_node.html#a13ed32802e21ce43bd72c80ba6c64bfa",tooltip="Add a route with a metric &gt;2 to the dest table. "];
+  Node10 -> Node11 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="Route::getIpDest",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route.html#aa0035cede27822c197601bdfa7882e69"];
+  Node10 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node12 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 [label="Node::isMpr",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_node.html#af691161613f713836c5307bf017e3842",tooltip="Allow you to know if you are MPR or not. "];
+  Node1 -> Node13 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="Tc::sendTc",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_tc.html#a7f81d2669ee841c526d06ebf9afd5636",tooltip="Send the Tc message with the values set in the fields. "];
+  Node13 -> Node14 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node14 [label="IPv6::getScope",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_i_pv6.html#ae75caad1c1802d45c3a7ddfae8e883d7"];
+  Node13 -> Node15 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node15 [label="IPv6::toChar",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_i_pv6.html#af0a0c1d062556f40f7d41b68cda32442"];
+}

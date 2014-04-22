@@ -1,0 +1,19 @@
+digraph "Route::setRoute"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="Route::setRoute",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="IPv6::setIPv6",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_i_pv6.html#ac22e0218bb46d0b7f8f68dbd1a26daec",tooltip="Change the IPv6 by an other one. "];
+  Node2 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="IPv6::getScope",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_i_pv6.html#ae75caad1c1802d45c3a7ddfae8e883d7"];
+  Node1 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="Route::getIpDest",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route.html#aa0035cede27822c197601bdfa7882e69"];
+  Node1 -> Node5 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="Route::getNextHop",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route.html#a4a0770b65b97df312e393da10320d607"];
+  Node1 -> Node6 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="Route::getMetric",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route.html#a9830d198125bca554a1019e371c8c875"];
+  Node1 -> Node7 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="Route::getInterface",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_route.html#ac0ff4805ca69efbefd4dd7242fcc82c0"];
+}

@@ -1,0 +1,9 @@
+digraph "Node::addAdvertisedNeighbor"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="Node::addAdvertisedNeighbor",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled" fontcolor="black"];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="IPv6::isEgal",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$class_i_pv6.html#a98f978f03ef1059b1ba30c6c3801c471",tooltip="Compare 2 IPv6. "];
+}
