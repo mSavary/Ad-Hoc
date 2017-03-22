@@ -42,4 +42,4 @@ Ad-Hoc Networks development team
 - Aminatou Mohamadou<aminatoumohamadou@gmail.com>
 - Alban Ngoma <ngoma.alban@gmail.com>
 - Maxime Savary <maxime.sav@gmail.com>
-- Corentin Soriot <silou.atien@gmail.com>
+- Corentin Soriot <>
